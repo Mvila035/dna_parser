@@ -2,13 +2,31 @@
 
 dna_parser is a small python library written in rust to perform encoding/feature extraction for machine learning on dna and rna sequences.
 
-## Usage
+# Table of contents
+
+# Install
+
+For now, to install the library, you need to have the rust programming language installed on your computer. 
+
+Run the following command on Unix-like command to install rust:
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+or see more options at https://www.rust-lang.org/tools/install.
+
+then run to install the test version
+```sh
+pip install -i https://test.pypi.org/simple/dna-parser
+```
+
+
+# Usage
 
 ```python
 import dna_parser
 ```
 
-### Loading Fasta Files
+## Loading Fasta Files
 
 ```python
 #load both metadata and sequence in tuples (metadata,sequences)
@@ -21,11 +39,11 @@ sequences= dna_parser.seq_from_fasta("path/to/fasta/file")
 metadata= dna_parser.metadata_from_fasta("path/to/fasta/file")
 ```
 
-### Encoding 
+## Encodings 
 
 Currently only support ordinal encoding, onehot encoding and Term Frequency Inverse Document Frequency (TF-IDF).
 
-#### Ordinal Encoding
+### Ordinal Encoding
 
 Nucleotides are currently encoded as follow:
 
@@ -36,7 +54,7 @@ Nucleotides are currently encoded as follow:
 * Other characters or gaps = 0
 
 ```python
-
+#returns a list of 1D numpy arrays representing the encoding
 encoding= dna_parser.ordinal_encoding(sequences, pad_type, pad_length, n_jobs)
 ```
 
@@ -48,7 +66,7 @@ Function Arguments:
 * n_jobs: number of threads to use to encode the sequences. 0 to use all cpus available.
 
 
-#### OneHot Encoding
+### OneHot Encoding
 
 Nucleotides are currently encoded as follow:
 
@@ -59,8 +77,9 @@ Nucleotides are currently encoded as follow:
 * Other characters or gaps = [0,0,0,0]
 
 ```python
-
+#returns a list of 2D numpy arrays representing the encoding
 encoding= dna_parser.onehot_encoding(sequences, pad_type, pad_length, n_jobs)
+
 ```
 
 Function Arguments:
@@ -70,7 +89,18 @@ Function Arguments:
 * pad_length: -2 to pad according to the longest sequence, -1 to trim to shortest, 0 for no paddding, any positive number for a fixed length.
 * n_jobs: number of threads to use to encode the sequences. 0 to use all cpus available.
 
-### Other Functions
+### TF-IDF Encoding
+
+```python
+encoding= dna_parser.tfidf_encoding(corpus)
+```
+
+Function Arguments:
+
+* corpus: List of strings (representing your sequences). 
+
+
+## Other Functions
 
 
 
