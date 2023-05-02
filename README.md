@@ -16,7 +16,7 @@ or see more options at https://www.rust-lang.org/tools/install.
 
 then run to install the test version
 ```sh
-pip install -i https://test.pypi.org/simple/dna-parser
+pip install -i https://test.pypi.org/simple/ dna-parser
 ```
 
 
