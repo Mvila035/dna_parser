@@ -11,15 +11,15 @@ dna_parser is a small python library written in rust to perform encoding/feature
 
 # Install <a name="install"></a>
 
-For now, to install the library, you need to have the rust programming language installed on your computer. 
+For now, you need to have the rust programming language installed on your computer to install the library. 
 
-Run the following command on Unix-like command to install rust:
+Run the following command on Unix-like OS to install rust:
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 or see more options at https://www.rust-lang.org/tools/install.
 
-then run to install the test version
+then, to install the test version you can run:
 ```sh
 pip install -i https://test.pypi.org/simple/ dna-parser
 ```
