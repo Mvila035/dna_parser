@@ -3,8 +3,13 @@
 dna_parser is a small python library written in rust to perform encoding/feature extraction for machine learning on dna and rna sequences.
 
 # Table of contents
+1. [Install](https://github.com/Mvila035/dna_parser/edit/main/README.md#install)
+2. [Usage](https://github.com/Mvila035/dna_parser/edit/main/README.md#usage)
+    1. [Loading Fasta Files](https://github.com/Mvila035/dna_parser/edit/main/README.md#loading-fasta-files)
+    2. [Encodings](https://github.com/Mvila035/dna_parser/edit/main/README.md#encodings)
+    3. [Other Functions](https://github.com/Mvila035/dna_parser/edit/main/README.md#other-functions)
 
-# Install
+# Install <a name="install"></a>
 
 For now, to install the library, you need to have the rust programming language installed on your computer. 
 
@@ -26,7 +31,7 @@ pip install -i https://test.pypi.org/simple/ dna-parser
 import dna_parser
 ```
 
-## Loading Fasta Files
+## Loading Fasta Files <a name="fasta"></a>
 
 ```python
 #load both metadata and sequence in tuples (metadata,sequences)
@@ -39,7 +44,7 @@ sequences= dna_parser.seq_from_fasta("path/to/fasta/file")
 metadata= dna_parser.metadata_from_fasta("path/to/fasta/file")
 ```
 
-## Encodings 
+## Encodings <a name="encodings"></a>
 
 Currently only support ordinal encoding, onehot encoding and Term Frequency Inverse Document Frequency (TF-IDF).
 
@@ -102,7 +107,7 @@ Function Arguments:
 * corpus: List of strings (representing your sequences). 
 
 
-## Other Functions
+## Other Functions <a name="others"></a>
 
 ### Generating Random sequences
 
