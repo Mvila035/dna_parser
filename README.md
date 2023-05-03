@@ -91,6 +91,8 @@ Function Arguments:
 
 ### TF-IDF Encoding
 
+Note that for this function, your sequences need to be split up in words (or k-mers) where each word is separated by a whitespace. To do so you can use the make_kmers function (see Other Functions section)
+
 ```python
 encoding= dna_parser.tfidf_encoding(corpus)
 ```
@@ -102,8 +104,33 @@ Function Arguments:
 
 ## Other Functions
 
+### Generating Random sequences
+
+This function generates random dna, rna or amino acid sequences and returns them in a list.
+
+```python
+sequences= dna_parser.random_seq(lenght, nb_of_seq, seq_type, n_jobs)
+```
+Function Arguments:
+
+* length: integer representing the length of the sequences
+* nb_of_seq: integer representing the number of sequences to generate
+* seq_type: string representing the type of sequence. dna, rna or aa (for amino acid)
+* n_jobs: number of threads to use to generate the sequences. 0 to use all cpus available.
 
 
+### Making K-mers in Sequences
+
+this function takes a string and returns a new one with withspaces inserted to form words of length k.
+
+```python
+seq_k_mers= dna_parser.make_kmers(seq, k)
+```
+
+Function Arguments:
+
+* seq: string representing a sequence
+* k: integer representing the length of words to form
 
 
 
