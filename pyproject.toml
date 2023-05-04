@@ -11,6 +11,4 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
-[tool.maturin.dependencies]
-numpy= ">=1.16.0"
-
+dependencies = ['numpy >= 1.16.0']
