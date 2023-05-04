@@ -12,5 +12,5 @@ classifiers = [
 ]
 
 [tool.maturin.dependencies]
-numpy= "numpy>=1.16.0"
+numpy= ">=1.16.0"
 
