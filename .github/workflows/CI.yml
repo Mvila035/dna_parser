@@ -1,7 +1,7 @@
 name: CI
 
 on:
-  push:
+  release:
     branches:
       - main
       - master
