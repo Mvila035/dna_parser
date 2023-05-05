@@ -80,7 +80,7 @@ fn parse_type_seq(length: i64, nb_of_seq: i64, seq_type: &str)-> Vec<String> {
 
 
 #[pyfunction]
-pub fn random_seq(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16) -> Vec<String>{
+pub fn random_seq_rust(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16) -> Vec<String>{
 
     let results= Arc::new(Mutex::new(Vec::new()));
 

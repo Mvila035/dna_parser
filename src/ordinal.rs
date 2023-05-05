@@ -266,7 +266,7 @@ fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus
 
 #[allow(unused_must_use)]
 #[pyfunction]
-pub fn ordinal_encoding<'pyt>(py:  Python <'pyt>, sequences: Vec<&str>, pad_type: &str, pad_length: i128, n_jobs: i16 ) ->  &'pyt PyList{
+pub fn ordinal_encoding_rust<'pyt>(py:  Python <'pyt>, sequences: Vec<&str>, pad_type: &str, pad_length: i128, n_jobs: i16 ) ->  &'pyt PyList{
 
     let vec_length= get_length(&sequences, pad_length);
     let cpu_to_use= check_nb_cpus(n_jobs);

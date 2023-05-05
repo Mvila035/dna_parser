@@ -12,3 +12,7 @@ classifiers = [
 ]
 
 dependencies = ['numpy >= 1.16.0']
+
+[tool.maturin]
+python-source = "python"
+
