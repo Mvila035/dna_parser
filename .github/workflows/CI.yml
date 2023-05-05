@@ -67,4 +67,4 @@ jobs:
           MATURIN_PYPI_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
         with:
           command: upload
-          args: -r testpypi --skip-existing *
+          args: -r https://test.pypi.org/legacy/ --skip-existing *
