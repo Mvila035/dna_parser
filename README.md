@@ -1,6 +1,6 @@
 # dna_parser
 
-dna_parser is a small python library written in rust to perform encoding/feature extraction for machine learning on dna and rna sequences.
+dna-parser is a Python library written in rust to encode (or perform feature extraction on) DNA/RNA sequences for machine learning.
 
 # Table of contents
 1. [Install](https://github.com/Mvila035/dna_parser/edit/main/README.md#install)
@@ -11,19 +11,17 @@ dna_parser is a small python library written in rust to perform encoding/feature
 
 # Install <a name="install"></a>
 
-For now, you need to have the rust programming language installed on your computer to install the library. 
+To install dna-parser simply run:
+```sh
+pip install dna-parser
+```
 
-Run the following command on Unix-like OS to install rust:
+If there is no Python wheel available for your OS you can install Rust and re-install dna-parser which should now compile and your machine.
+Run the following command on Unix-like OS to install Rust:
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 or see more options at https://www.rust-lang.org/tools/install.
-
-then, to install the test version you can run:
-```sh
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple dna-parser
-```
-
 
 # Usage
 
@@ -67,7 +65,7 @@ Function Arguments:
 
 * sequences: List of strings (representing your sequences). 
 * pad_type: pad (or trim) "before" the sequence or "after" the sequences.
-* pad_length: -2 to pad according to the longest sequence, -1 to trim to shortest, 0 for no paddding, any positive number for a fixed length.
+* pad_length: -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
 * n_jobs: number of threads to use to encode the sequences. 0 to use all cpus available.
 
 
@@ -91,7 +89,7 @@ Function Arguments:
 
 * sequences: List of strings (representing your sequences). 
 * pad_type: pad (or trim) "before" the sequence or "after" the sequences.
-* pad_length: -2 to pad according to the longest sequence, -1 to trim to shortest, 0 for no paddding, any positive number for a fixed length.
+* pad_length: -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
 * n_jobs: number of threads to use to encode the sequences. 0 to use all cpus available.
 
 ### TF-IDF Encoding
