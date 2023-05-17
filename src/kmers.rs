@@ -3,11 +3,9 @@ use pyo3::prelude::*;
 
 //implement rope?
 
-
+/// Returns a string with white spaces inserted every k characters.
 #[pyfunction]
 pub fn make_kmers(seq: String, k: i64) -> String {
-    
-    /// Returns a string with white spaces inserted every k characters.
 
     let mut new_str= String::from("");
     let k_usize= k as usize;

@@ -7,14 +7,10 @@ use std::thread;
 use num_cpus;
 
 
-
-
+/// Returns an Array1<f32> which is the ordinal encoding representation of the genomic sequence
+///
+/// this function iterates on the sequence to encode it and pad/trim at the end of the sequence.
 pub fn ordinal_after(sequence: &str, ncols: usize) -> Array1<f32>{
-
-    /// Returns an Array2<i8> which is the ordinal encoding representation of the genomic sequence
-    ///
-    /// this function iterates on the sequence to encode it and pad/trim at the end of the sequence.
-
 
     let mut vec= Array1::<f32>::zeros(ncols);
 
@@ -46,12 +42,11 @@ pub fn ordinal_after(sequence: &str, ncols: usize) -> Array1<f32>{
 }
 
 
-
+/// Returns an Array1<f32> which is the ordinal encoding representation of the genomic sequence
+///
+/// this function iterates backward on the sequence to encode it and to pad/trim at the beginning of the sequence
 pub fn ordinal_before(sequence: &str, ncols: usize) -> Array1<f32>{ 
 
-   /// Returns an Array2<i8> which is the ordinal encoding representation of the genomic sequence
-    ///
-    /// this function iterates backward on the sequence to encode it and to pad/trim at the beginning of the sequence
 
 
     let mut vec= Array1::<f32>::zeros(ncols);
@@ -86,15 +81,13 @@ pub fn ordinal_before(sequence: &str, ncols: usize) -> Array1<f32>{
 }
 
 
-
-
+/// Returns a usize representing the length that the sequences should have after padding/trimming
+/// or 0 for no padding/trimming
+///
+/// if pad_length = -1 searches for the shortest sequence
+/// if pad_length = -2 searches for the longest sequence
 fn get_length(sequences: &Vec<&str>, pad_length: i128) -> usize {
 
-    /// Returns a usize representing the length that the sequences should have after padding/trimming
-    /// or 0 for no padding/trimming
-
-    /// if pad_length = -1 searches for the shortest sequence
-    /// if pad_length= -2 searches for the longest sequence
 
     let mut length= sequences[0].len();
 
@@ -151,12 +144,10 @@ fn get_length(sequences: &Vec<&str>, pad_length: i128) -> usize {
 }
 
 
-
+/// Returns the number of threads to use.
+/// 
+/// if n_jobs = 0; number of threads = number of cpus
 fn check_nb_cpus(n_jobs: i16) -> usize {
-
-    /// Returns the number of threads to use.
-    /// 
-    /// if n_jobs = 0; number of threads = number of cpus
 
     let nb_cpus;
 
@@ -181,13 +172,12 @@ fn check_nb_cpus(n_jobs: i16) -> usize {
 
 
 
-
+/// Returns the ordinal encodings in a Vec for the sequences passed to this fucntion.
+///
+/// this function parse the type and length of padding for the encoding
 fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Array1<f32>> {
 
-    /// Returns the ordinal encodings in a Vec for the sequences passed to this fucntion.
-    ///
-    /// this function parse the type and length of padding for the encoding
-
+    
     let mut encoded_sequences= Vec::new();
 
     if pad_type== "after" && vec_length > 0 {
@@ -245,15 +235,11 @@ fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Arra
     encoded_sequences
 }
 
-
+/// Returns a Vec of tuples (usize, Vec<Array1<f32>>)
+///
+/// This function splits the sequences to encode and distributes them to different threads. 
+/// the usize is used to keep the order of sequences and the Vec<Array2<i8>> represent the ordinal encodings of the genomic sequences
 fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus: usize) -> Vec<(usize, Vec<Array1<f32>>)> {
-
-
-    /// Returns a Vec of tuples (usize, Vec<Array1<f32>>)
-    ///
-    /// This function splits the sequences to encode and distributes them to different threads. 
-    /// the usize is used to keep the order of sequences and the Vec<Array2<i8>> represent the ordinal encodings of the genomic sequences
-
 
 
     //determine size of chunks based on number of threads and add 1 to be sure 
@@ -293,19 +279,17 @@ fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus
 }
 
 
-
+/// Returns a PyList of Numpy f32 1D array to Python
+///
+/// # Arguments
+/// * `py` - Python GIL token (used to acquire the GIL)
+/// * `sequences` - Vec of &str representing the sequences to encode
+/// * `pad_type` - &str indicating to padd (or trim) "before" or "after" the sequences
+/// * `pad_length` - -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
+/// * `n_jobs` - number of threads to use. 0 to use every cpu
 #[allow(unused_must_use)]
 #[pyfunction]
 pub fn ordinal_encoding_rust<'pyt>(py:  Python <'pyt>, sequences: Vec<&str>, pad_type: &str, pad_length: i128, n_jobs: i16 ) ->  &'pyt PyList{
-
-    /// Returns a PyList of Numpy f32 1D array to Python
-    ///
-    /// # Arguments
-    /// * `py` - Python GIL token (used to acquire the GIL)
-    /// * `sequences` - Vec of &str representing the sequences to encode
-    /// * `pad_type` - &str indicating to padd (or trim) "before" or "after" the sequences
-    /// * `pad_length` - -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
-    /// * `n_jobs` - number of threads to use. 0 to use every cpu
 
     let vec_length= get_length(&sequences, pad_length);
     let cpu_to_use= check_nb_cpus(n_jobs);
