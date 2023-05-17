@@ -13,6 +13,10 @@ use num_cpus;
 
 pub fn onehot_after(sequence: &str, ncols: usize) -> Array2<i8>{
 
+    /// Returns an Array2<i8> which is the onehot encoding representation of the genomic sequence
+    ///
+    /// this function iterates on the sequence to encode it.
+
 
     let mut vec= Array2::<i8>::zeros((ncols, 4));
 
@@ -46,6 +50,9 @@ pub fn onehot_after(sequence: &str, ncols: usize) -> Array2<i8>{
 
 pub fn onehot_before(sequence: &str, ncols: usize) -> Array2<i8>{
 
+    /// Returns an Array2<i8> which is the onehot encoding representation of the genomic sequence
+    ///
+    /// this function iterates backward on the sequence to encode it and to pad/trim at the beginning of the sequence
 
     let mut vec= Array2::<i8>::zeros((ncols, 4));
 
@@ -82,6 +89,14 @@ pub fn onehot_before(sequence: &str, ncols: usize) -> Array2<i8>{
 
 
 fn get_length(sequences: &Vec<&str>, pad_length: i128) -> usize {
+
+    /// Returns a usize representing the length that the sequences should have after padding/trimming
+    /// or 0 for no padding/trimming
+
+    /// if pad_length = -1 searches for the shortest sequence
+    /// if pad_length= -2 searches for the longest sequence
+
+
 
     let mut length= sequences[0].len();
 
@@ -141,6 +156,10 @@ fn get_length(sequences: &Vec<&str>, pad_length: i128) -> usize {
 
 fn check_nb_cpus(n_jobs: i16) -> usize {
 
+    /// Returns the number of threads to use.
+    /// 
+    /// if n_jobs = 0; number of threads = number of cpus
+
     let nb_cpus;
 
     if n_jobs == 0 {
@@ -166,6 +185,10 @@ fn check_nb_cpus(n_jobs: i16) -> usize {
 
 
 fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Array2<i8>> {
+
+    /// Returns the onehot encodings in a Vec for the sequences passed to this fucntion.
+    ///
+    /// this function parse the type and length of padding for the encoding 
 
     let mut encoded_sequences= Vec::new();
 
@@ -227,9 +250,14 @@ fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Arra
 
 fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus: usize) -> Vec<(usize, Vec<Array2<i8>>)> {
 
+    /// Returns a Vec of tuples (usize, Vec<Array2<i8>>)
+    ///
+    /// This function splits the sequences to encode and distributes them to different threads. 
+    /// the usize is used to keep the order of sequences and the Vec<Array2<i8>> represent the onehot encodings of the genomic sequences
+
 
     //determine size of chunks based on number of threads and add 1 to be sure 
-    //to have a number of chunks egal to nb of cpus and not superior
+    //to have a number of chunks equal to nb of cpus and not superior
     let seq_len= sequences.len();
     let slice_len= (seq_len/ nb_cpus) + 1;
 
@@ -269,6 +297,15 @@ fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus
 #[allow(unused_must_use)]
 #[pyfunction]
 pub fn onehot_encoding_rust<'pyt>(py:  Python <'pyt>, sequences: Vec<&str>, pad_type: &str, pad_length: i128, n_jobs: i16 ) ->  &'pyt PyList{
+
+    /// Returns a PyList of Numpy i8 2D array to Python
+    ///
+    /// # Arguments
+    /// * `py` - Python GIL token (used to acquire the GIL)
+    /// * `sequences` - Vec of &str representing the sequences to encode
+    /// * `pad_type` - &str indicating to padd (or trim) "before" or "after" the sequences
+    /// * `pad_length` - -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
+    /// * `n_jobs` - number of threads to use. 0 to use every cpu
 
     let vec_length= get_length(&sequences, pad_length);
     let cpu_to_use= check_nb_cpus(n_jobs);

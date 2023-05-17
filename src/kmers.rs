@@ -1,13 +1,17 @@
 
 use pyo3::prelude::*;
 
-//implement rope
+//implement rope?
 
-fn string_to_kmers(k: i64, sequence: &str) -> String {
+
+#[pyfunction]
+pub fn make_kmers(seq: String, k: i64) -> String {
+    
+    /// Returns a string with white spaces inserted every k characters.
 
     let mut new_str= String::from("");
     let k_usize= k as usize;
-    for (i,c) in sequence.chars().enumerate() {
+    for (i,c) in seq.chars().enumerate() {
 
         new_str.push(c);
 
@@ -18,13 +22,6 @@ fn string_to_kmers(k: i64, sequence: &str) -> String {
         }
         
     }   
-    return new_str
-}
 
-#[pyfunction]
-pub fn make_kmers(seq: String, k: i64) -> String {
-
-    let return_seq= string_to_kmers(k,&seq);
-
-    return return_seq
+    new_str
 }

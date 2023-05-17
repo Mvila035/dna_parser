@@ -2,10 +2,17 @@ use std::fs::File;
 use pyo3::prelude::*;
 use std::io::{prelude::*, BufReader};
 
+//implement a struct for fasta file?
 
 #[pyfunction]
 pub fn seq_from_fasta(file_path: &str) ->  Vec<String> {
 
+    /// Returns a Vec of string where each string is one of the genomic sequences in the fasta file
+    /// The order in which the sequences appear in the fasta file is conserved
+    ///
+    /// # Arguments
+    /// * `file_path` - path to the fasta file
+   
     let f = File::open(file_path).expect("Unable to open file");
     let f = BufReader::new(f);
 
@@ -44,6 +51,13 @@ pub fn seq_from_fasta(file_path: &str) ->  Vec<String> {
 #[pyfunction]
 pub fn metadata_from_fasta(file_path: &str) ->  Vec<String> {
 
+    /// Returns a Vec of string where each string is the metadata for one genomic sequence
+    /// The order in which the sequences metadata appear in the fasta file is conserved
+    ///
+    /// # Arguments
+    /// * `file_path` - path to the fasta file
+   
+
     let f = File::open(file_path).expect("Unable to open file");
     let f = BufReader::new(f);
 
@@ -64,6 +78,13 @@ pub fn metadata_from_fasta(file_path: &str) ->  Vec<String> {
 
 #[pyfunction]
 pub fn load_fasta(file_path: &str) ->  Vec<(String,String)>  {
+
+    /// Returns a Vec of tuples each containing 2 strings. The first string is the metadata and the second one is the associated genomic sequence
+    /// The order in which the metadatas and sequences appear in the fasta file is conserved
+    ///
+    /// # Arguments
+    /// * `file_path` - path to the fasta file
+   
 
     let f = File::open(file_path).expect("Unable to open file");
     let reader = BufReader::new(f);

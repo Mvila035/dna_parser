@@ -1,4 +1,5 @@
 # dna_parser
+![Build Status](https://github.com/Mvila035/dna_parser/workflows/CI/badge.svg)
 
 dna-parser is a Python library written in rust to encode (or perform feature extraction on) DNA/RNA sequences for machine learning.
 
