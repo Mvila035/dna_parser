@@ -54,7 +54,7 @@ Nucleotides are currently encoded as follow:
 * A= 0.25
 * C= 0.50
 * G= 0.75
-* T/U= 0.75
+* T/U= 1.0
 * Other characters or gaps = 0
 
 ```python
