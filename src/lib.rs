@@ -6,7 +6,7 @@ pub mod tfidf;
 pub mod ordinal;
 pub mod fasta_files;
 pub mod utils;
-
+pub mod cross;
 
 
 use pyo3::prelude::*;
@@ -21,7 +21,7 @@ use random_sequence::*;
 use tfidf::*;
 use ordinal::*;
 use fasta_files::*;
-
+use cross::*;
 
 
 
@@ -37,6 +37,7 @@ fn dna_parser(_py: Python<'_>, m: &PyModule)-> PyResult<()> {
     m.add_function(wrap_pyfunction!(load_fasta,m)?)?;
     m.add_function(wrap_pyfunction!(seq_from_fasta,m)?)?;
     m.add_function(wrap_pyfunction!(metadata_from_fasta,m)?)?;
+    m.add_function(wrap_pyfunction!(cross_encoding_rust,m)?)?;
 
     Ok(())
 }

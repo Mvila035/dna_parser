@@ -93,6 +93,31 @@ Function Arguments:
 * pad_length: -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
 * n_jobs: number of threads to use to encode the sequences. 0 to use all cpus available.
 
+### Cross Encoding
+
+Nucleotides are currently encoded as follow:
+
+* A= [0,-1]
+* C= [-1,0]
+* G= [1,0]
+* T/U= [0,1]
+* Other characters or gaps = [0,0]
+
+```python
+#returns a list of 2D numpy arrays representing the encoding
+encoding= dna_parser.cross_encoding(sequences, pad_type, pad_length, n_jobs)
+
+```
+
+Function Arguments:
+
+* sequences: List of strings (representing your sequences). 
+* pad_type: pad (or trim) "before" the sequence or "after" the sequences.
+* pad_length: -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
+* n_jobs: number of threads to use to encode the sequences. 0 to use all cpus available.
+
+
+
 ### TF-IDF Encoding
 
 Note that for this function, your sequences need to be split up in words (or k-mers) where each word is separated by a whitespace. To do so you can use the make_kmers function (see Other Functions section)
