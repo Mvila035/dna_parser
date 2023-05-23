@@ -5,7 +5,7 @@ pub mod random_sequence;
 pub mod tfidf;
 pub mod ordinal;
 pub mod fasta_files;
-
+pub mod utils;
 
 
 
