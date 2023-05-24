@@ -45,7 +45,7 @@ metadata= dna_parser.metadata_from_fasta("path/to/fasta/file")
 
 ## Encodings <a name="encodings"></a>
 
-Currently only support ordinal encoding, onehot encoding and Term Frequency Inverse Document Frequency (TF-IDF).
+Currently only support ordinal encoding, onehot encoding, cross encoding and Term Frequency Inverse Document Frequency (TF-IDF).
 
 ### Ordinal Encoding
 
@@ -64,10 +64,10 @@ encoding= dna_parser.ordinal_encoding(sequences, pad_type, pad_length, n_jobs)
 
 Function Arguments:
 
-* sequences: List of strings (representing your sequences). 
-* pad_type: pad (or trim) "before" the sequence or "after" the sequences.
-* pad_length: -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
-* n_jobs: number of threads to use to encode the sequences. 0 to use all cpus available.
+* sequences (list of str): list of genomic sequences.
+* pad_type (str; default= "after"): pad (or trim) "before" or "after" the sequences.
+* pad_length (int; default= 0): -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
+* n_jobs (int; default= 1): number of threads to use to encode the sequences. 0 to use all cpus available.
 
 
 ### OneHot Encoding
@@ -88,10 +88,10 @@ encoding= dna_parser.onehot_encoding(sequences, pad_type, pad_length, n_jobs)
 
 Function Arguments:
 
-* sequences: List of strings (representing your sequences). 
-* pad_type: pad (or trim) "before" the sequence or "after" the sequences.
-* pad_length: -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
-* n_jobs: number of threads to use to encode the sequences. 0 to use all cpus available.
+* sequences (list of str): list of genomic sequences.
+* pad_type (str; default= "after"): pad (or trim) "before" or "after" the sequences.
+* pad_length (int; default= 0): -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
+* n_jobs (int; default= 1): number of threads to use to encode the sequences. 0 to use all cpus available.
 
 ### Cross Encoding
 
@@ -111,16 +111,16 @@ encoding= dna_parser.cross_encoding(sequences, pad_type, pad_length, n_jobs)
 
 Function Arguments:
 
-* sequences: List of strings (representing your sequences). 
-* pad_type: pad (or trim) "before" the sequence or "after" the sequences.
-* pad_length: -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
-* n_jobs: number of threads to use to encode the sequences. 0 to use all cpus available.
+* sequences (list of str): list of genomic sequences.
+* pad_type (str; default= "after"): pad (or trim) "before" or "after" the sequences.
+* pad_length (int; default= 0): -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
+* n_jobs (int; default= 1): number of threads to use to encode the sequences. 0 to use all cpus available.
 
 
 
 ### TF-IDF Encoding
 
-Note that for this function, your sequences need to be split up in words (or k-mers) where each word is separated by a whitespace. To do so you can use the make_kmers function (see Other Functions section)
+Note that for this function, your sequences need to be split up in words (or k-mers) where each word is separated by a whitespace. To do so you can use the make_kmers function (see Other Functions section).
 
 ```python
 encoding= dna_parser.tfidf_encoding(corpus)
@@ -128,7 +128,7 @@ encoding= dna_parser.tfidf_encoding(corpus)
 
 Function Arguments:
 
-* corpus: List of strings (representing your sequences). 
+* corpus (list of str): genomic sequences.
 
 
 ## Other Functions <a name="others"></a>
@@ -142,10 +142,10 @@ sequences= dna_parser.random_seq(lenght, nb_of_seq, seq_type, n_jobs)
 ```
 Function Arguments:
 
-* length: integer representing the length of the sequences
-* nb_of_seq: integer representing the number of sequences to generate
-* seq_type: string representing the type of sequence. dna, rna or aa (for amino acid)
-* n_jobs: number of threads to use to generate the sequences. 0 to use all cpus available.
+* length (int): length of the sequences.
+* nb_of_seq (int): number of sequences to generate.
+* seq_type (str; default= dna): type of sequences. "dna", "rna" or "aa" (for amino acid).
+* n_jobs (int, default= 1): number of threads to use to generate the sequences. 0 to use all cpus available.
 
 
 ### Making K-mers in Sequences
@@ -158,8 +158,8 @@ seq_k_mers= dna_parser.make_kmers(seq, k)
 
 Function Arguments:
 
-* seq: string representing a sequence
-* k: integer representing the length of words to form
+* seq (str): the genomic sequence.
+* k (int): length of words to create in the sequence.
 
 
 
