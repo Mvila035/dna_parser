@@ -22,9 +22,9 @@ pub fn seq_from_fasta(file_path: &str) ->  Vec<String> {
 
         let line = line.expect("Unable to read line");
 
-        if line.chars().nth(0).unwrap() == '>' {
+        if line.starts_with('>') {
             
-            if seq.len() > 0 {
+            if !seq.is_empty() {
 
                 sequences.push(seq);
                 seq= String::from("");
@@ -39,7 +39,7 @@ pub fn seq_from_fasta(file_path: &str) ->  Vec<String> {
 
     }
 
-    if seq.len() > 0 {
+    if !seq.is_empty() {
         sequences.push(seq);
     }
 
@@ -64,7 +64,7 @@ pub fn metadata_from_fasta(file_path: &str) ->  Vec<String> {
 
         let line = line.expect("Unable to read line");
 
-        if line.chars().nth(0).unwrap() == '>' {
+        if line.starts_with('>') {
 
             metadata.push(line)
         }
@@ -93,15 +93,15 @@ pub fn load_fasta(file_path: &str) ->  Vec<(String,String)>  {
 
         let line = line.expect("Unable to read line");
 
-        if line.chars().nth(0).unwrap() == '>' {
+        if line.starts_with('>') {
 
-            if seq.len() > 0 {
+            if !seq.is_empty() {
 
                 metadata_and_seq.push((metadata, seq));
                 seq= String::from("");
             }
 
-            metadata= String::from(line);
+            metadata= line;
         }
 
         else {
@@ -112,7 +112,7 @@ pub fn load_fasta(file_path: &str) ->  Vec<(String,String)>  {
 
     }
 
-    if seq.len() > 0 {
+    if !seq.is_empty() {
 
         metadata_and_seq.push((metadata, seq));
     }

@@ -1,6 +1,6 @@
 
 use num_cpus;
-
+use std::cmp::Ordering;
 
 
 /// Returns a usize representing the length that the sequences should have after padding/trimming
@@ -8,7 +8,7 @@ use num_cpus;
 ///
 /// if pad_length = -1 searches for the shortest sequence
 /// if pad_length = -2 searches for the longest sequence
-pub fn get_length(sequences: &Vec<&str>, pad_length: i128) -> usize {
+pub fn get_length(sequences: &[&str], pad_length: i128) -> usize {
 
 
     let mut length= sequences[0].len();
@@ -62,7 +62,7 @@ pub fn get_length(sequences: &Vec<&str>, pad_length: i128) -> usize {
         length= pad_length as usize;
     }
 
-    return length
+    length
 }
 
 
@@ -71,23 +71,11 @@ pub fn get_length(sequences: &Vec<&str>, pad_length: i128) -> usize {
 /// if n_jobs = 0; number of threads = number of cpus
 pub fn check_nb_cpus(n_jobs: i16) -> usize {
 
-    let nb_cpus;
+    match n_jobs.cmp(&0_i16) {
 
-    if n_jobs == 0 {
-
-        nb_cpus= num_cpus::get_physical();
+        Ordering::Equal => num_cpus::get_physical(),
+        Ordering::Less => panic!("Cannot have a negative number of cpu. Use 0 to use every cpus or input the number of desired cpus"),
+        Ordering::Greater => n_jobs as usize,
     }
 
-    else if n_jobs < 0 {
-
-       panic!("Cannot have a negative number of cpu. Use 0 to use every cpus or input the number of desired cpus")
-
-    }
-
-    else {
-
-        nb_cpus= n_jobs as usize;
-    }
-
-    nb_cpus
 }

@@ -117,7 +117,7 @@ fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Arra
 
     else if pad_type== "after" && vec_length == 0 {
 
-        for seq in chunk.into_iter(){
+        for seq in chunk.iter(){
 
             let seq_len = seq.len();
             let encoding= cross_after(seq, seq_len);
@@ -129,7 +129,7 @@ fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Arra
 
     else if pad_type== "before" && vec_length == 0 {
 
-        for seq in chunk.into_iter(){
+        for seq in chunk.iter(){
 
             let seq_len = seq.len();
             let encoding= cross_before(seq, seq_len);

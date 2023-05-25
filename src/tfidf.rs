@@ -10,7 +10,7 @@ use std::collections::HashSet;
 
 /// Returns a tuple containing the Hashmap mapping each word with the number of time it appears and a Vec
 /// with the order in which the words were encountered in the corpus. 
-fn map_vocabulary(corpus: &Vec<String>) -> (HashMap<&str,f64>, Vec<&str>) {
+fn map_vocabulary(corpus: &[String]) -> (HashMap<&str,f64>, Vec<&str>) {
 
     let mut map= HashMap::new();
     let mut word_order= Vec::new();
@@ -39,7 +39,7 @@ fn map_vocabulary(corpus: &Vec<String>) -> (HashMap<&str,f64>, Vec<&str>) {
 }
 
 /// Maps the number of time each word appears in the genomic sequence
-fn word_counts(sequence: &String) -> HashMap<&str,f64> {
+fn word_counts(sequence: &str) -> HashMap<&str,f64> {
 
     let mut counts= HashMap::new();
 
@@ -94,7 +94,7 @@ fn compute_tfidf(length:f64, counts: HashMap<&str, f64>, map: &(HashMap<&str,f64
 /// * `seq_type` - either "dna", "rna" or "aa" for amino acid
 /// * `n_jobs` - number of threads to use. 0 to use every cpu
 #[pyfunction]
-pub fn tfidf_encoding<'pyt>(py: Python <'pyt>, corpus: Vec<String>) -> &'pyt PyArray2<f64> {
+pub fn tfidf_encoding(py: Python, corpus: Vec<String>) -> &PyArray2<f64> {
 
     let word_map= map_vocabulary(&corpus);
     let nrows= corpus.len();
@@ -111,10 +111,7 @@ pub fn tfidf_encoding<'pyt>(py: Python <'pyt>, corpus: Vec<String>) -> &'pyt PyA
         current_row.assign(&ArrayView::from(&tfidf_vec));
         
     }
-
-    
-    let py_array= matrix.into_pyarray(py);
-    py_array
-
-    
+  
+    matrix.into_pyarray(py)
+     
 }

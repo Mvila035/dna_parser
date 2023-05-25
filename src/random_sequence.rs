@@ -4,7 +4,7 @@ use pyo3::prelude::*;
 use std::sync::Mutex;
 use std::thread;
 use std::sync::Arc;
-use num_cpus;
+use crate::utils;
 
 /// Returns a randomly generate string representing a DNA sequence
 fn generate_dna_seq(length: i64) -> String {
@@ -84,33 +84,6 @@ fn parse_type_seq(length: i64, nb_of_seq: i64, seq_type: &str)-> Vec<String> {
     vec_of_seq
 }
 
-/// Returns the number of threads to use.
-/// 
-/// if n_jobs = 0; number of threads = number of cpus
-fn check_nb_cpus(n_jobs: i16) -> usize {
-
-    let nb_cpus;
-
-    if n_jobs == 0 {
-
-        nb_cpus= num_cpus::get_physical();
-    }
-
-    else if n_jobs < 0 {
-
-       panic!("Cannot have a negative number of cpu. Use 0 to use every cpus or input the number of desired cpus")
-
-    }
-
-    else {
-
-        nb_cpus= n_jobs as usize;
-    }
-
-    nb_cpus
-}
-
-
 
 /// Returns a Vec of strings representing a sequences
 ///
@@ -124,7 +97,7 @@ fn check_nb_cpus(n_jobs: i16) -> usize {
 #[pyfunction]
 pub fn random_seq_rust(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16) -> Vec<String>{
 
-    let cpu_to_use= check_nb_cpus(n_jobs);
+    let cpu_to_use= utils::check_nb_cpus(n_jobs);
 
     let results= Arc::new(Mutex::new(Vec::new()));
 
@@ -145,7 +118,7 @@ pub fn random_seq_rust(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16)
             }
 
             else {
-                nb_seq_left = nb_seq_left - seq_per_thread;
+                nb_seq_left -= seq_per_thread;
             }
 
 
@@ -158,7 +131,7 @@ pub fn random_seq_rust(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16)
                  }
             });
 
-            nb_of_threads_left = nb_of_threads_left -1;
+            nb_of_threads_left -= 1;
         }
 
     });

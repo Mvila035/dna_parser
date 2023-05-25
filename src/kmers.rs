@@ -15,7 +15,7 @@ pub fn make_kmers(seq: String, k: i64) -> String {
 
         if (i+1)%k_usize == 0 {
 
-            new_str.push_str(" ");
+            new_str.push(' ');
     
         }
         
