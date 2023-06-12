@@ -6,7 +6,7 @@ dna-parser is a Python library written in rust to encode (or perform feature ext
 # Table of contents
 1. [Install](https://github.com/Mvila035/dna_parser#install)
 2. [Usage](https://github.com/Mvila035/dna_parser#usage)
-    1. [Loading Fasta Files](https://github.com/Mvila035#fasta)
+    1. [Loading Fasta Files](https://github.com/Mvila035/dna_parser#fasta)
     2. [Encodings](https://github.com/Mvila035/dna_parser#encodings)
     3. [Other Functions](https://github.com/Mvila035/dna_parser#others)
 
