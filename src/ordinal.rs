@@ -175,7 +175,6 @@ fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus
 
     });
 
-
 // ####################################### end of threads #####################################
 
 

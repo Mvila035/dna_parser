@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::{fs::File, io::empty};
 use pyo3::prelude::*;
 use std::io::{prelude::*, BufReader};
 
@@ -121,3 +121,6 @@ pub fn load_fasta(file_path: &str) ->  Vec<(String,String)>  {
 
 
 }
+
+// ################  test implementation generator load seq #############
+
