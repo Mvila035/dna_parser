@@ -1,4 +1,4 @@
-use std::{fs::File, io::empty};
+use std::fs::File;
 use pyo3::prelude::*;
 use std::io::{prelude::*, BufReader};
 

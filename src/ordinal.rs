@@ -197,21 +197,24 @@ fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus
 /// * `n_jobs` - number of threads to use. 0 to use every cpu
 #[allow(unused_must_use)]
 #[pyfunction]
-pub fn ordinal_encoding_rust<'pyt>(py:  Python <'pyt>, sequences: Vec<&str>, pad_type: &str, pad_length: i128, n_jobs: i16 ) ->  &'pyt PyList{
+pub fn ordinal_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, PyList>, pad_type: &str, pad_length: i128, n_jobs: i16 ) ->  Bound<'pyt,PyList>{
+    
+    let sequences: Vec<String> = sequences_py.extract().expect("Error unpacking Python object to Rust");
+    let seq_refs: Vec<&str> = sequences.iter().map(AsRef::as_ref).collect();
 
-    let vec_length= utils::get_length(&sequences, pad_length);
+    let vec_length= utils::get_length(&seq_refs, pad_length);
     let cpu_to_use= utils::check_nb_cpus(n_jobs);
 
-    let py_list= PyList::empty(py);
+    let py_list= PyList::empty_bound(py);
 
-    let results=py.allow_threads(move || multithreads(sequences, pad_type, vec_length, cpu_to_use));
+    let results=py.allow_threads(move || multithreads(seq_refs, pad_type, vec_length, cpu_to_use));
 
   
     for (_index, sequences ) in results {
 
         for seq in sequences {
 
-            py_list.append(seq.into_pyarray(py));
+            py_list.append(seq.into_pyarray_bound(py));
         }
     }
     

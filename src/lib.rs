@@ -27,7 +27,7 @@ use cross::*;
 
 
 #[pymodule]
-fn dna_parser(_py: Python<'_>, m: &PyModule)-> PyResult<()> {
+fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
 
     m.add_function(wrap_pyfunction!(onehot_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(make_kmers,m)?)?;

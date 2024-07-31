@@ -1,142 +1,137 @@
 
+use std::ops::{DivAssign, MulAssign};
+use std::str::from_utf8;
 use numpy::ndarray::{Array1, Array2};
-use numpy::array::PyArray2;
+use numpy::array::{PyArray1,PyArray2};
 use numpy::IntoPyArray;
+use numpy::PyArrayMethods;
 use pyo3::prelude::*;
+use pyo3::types::{PyDict, PyList};
 use std::collections::{HashMap, HashSet};
 
 
 // ######################################################################################
 
 #[pyfunction] 
-pub fn map_vocabulary_rust(py: Python, corpus: Vec<&str>, mut vocabulary: HashMap<String, usize>,kmer_size: usize) -> HashMap<String,usize> {
+pub fn map_vocabulary_rust<'pyt>(corpus_list: &Bound<'pyt, PyList>, vocabulary_py: &Bound< PyDict >, kmer_size: usize) -> HashMap<String,usize> {
+
+    let corpus: Vec<String> = corpus_list.extract().expect("Error unpacking Python object to Rust");
+    let mut vocabulary:HashMap<String,usize>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
 
     for seq in corpus {
 
-        let mut word= String::new();
-        for (i,c) in seq.chars().enumerate() {
-            
-            word.push(c);
-            
-            if ((i+1) % kmer_size == 0) && !vocabulary.contains_key(&word) {
-            
-                vocabulary.insert(word, vocabulary.len());
-                word= String::new();
-                
-            }
+        for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
 
-            else if (i+1) % kmer_size == 0 {
-                word= String::new();
+            let word= from_utf8(word_in_bytes).unwrap();
+
+            if !vocabulary.contains_key(word) {
+
+                vocabulary.insert(word.to_string(), vocabulary.len());
             }
+            
         }
     }
     vocabulary 
 }
 
-fn update_idf_values (idf: Array1<i32>  ) {
 
-    
-    
-}
 
-// check that word is in voc!!!!
-// reset word like in map_vocabulary!!!
-fn compute_df(corpus: &Vec<&str>, mut df: HashMap<String, usize>, kmer_size: usize ) -> HashMap<String, usize>  {
+fn compute_df<'a>(corpus: &Vec<String>, vocabulary: &HashMap<String, usize> , kmer_size: usize ) -> Array1<i32>  {
+
+    let mut df= Array1::<i32>::zeros(vocabulary.len());
 
     for seq in corpus {
         
         let mut words_in_seq= HashSet::new();
-        let mut word= String::new();
 
-        for (i,c) in seq.chars().enumerate() {
-            
-            word.push(c);
-            
-            if ((i+1) % kmer_size == 0 ) && !words_in_seq.contains(&word) {
+        for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
 
-                words_in_seq.insert(word.clone());
-                df.insert(word.clone(), df[&word]+1); 
-                word= String::new();
-                
+            let word= from_utf8(word_in_bytes).unwrap();
+
+            if !words_in_seq.contains(word) {
+                words_in_seq.insert(word);
+
+                df[vocabulary[word]] +=1;
             }
 
-            else if ((i+1) % kmer_size == 0) {
-                word= String::new();
-            }
-        }   
+        }
     }
     df
 }
 
-fn compute_idf(df: &HashMap<String, usize>, nb_document: usize)-> HashMap<String, f64>{
+fn compute_idf<'a>(df: &Array1<i32>, nb_document: usize)-> Array1<f64>{
 
-    let mut idf: HashMap<String, f64>= HashMap::new();
+    let mut idf= Array1::<f64>::zeros(df.len());
 
-    for key in df.keys(){
+    for (index,_val) in df.into_iter().enumerate(){
 
-        let idf_value= ( nb_document as f64 / (df[key]+1) as f64 ).ln();
-        idf.insert(key.clone(), idf_value);
+        idf[index]= ( nb_document as f64 / (df[index]+1) as f64 ).ln();
+
     }
 
     idf
 
 }
 
-#[pyfunction]
-pub fn transform_idf_rust<'pyt>(py:  Python<'pyt>, corpus: Vec<&str>, vocabulary: HashMap<String,usize>, idf: HashMap<String, f64>, kmer_size: usize) -> &'pyt PyArray2<f64> {
+fn get_number_of_kmer(sequence: &str, kmer_size: usize) -> usize {
 
+    let seq_len= sequence.len();
+
+    if seq_len%kmer_size == 0 { seq_len/kmer_size }
+
+    else { (seq_len/kmer_size) +1 }
+
+}
+
+#[pyfunction]
+pub fn transform_idf_rust<'pyt>(py:  Python<'pyt>, corpus_list: &Bound<'pyt, PyList>,
+ vocabulary_py: &Bound< PyDict > , idf: Bound< PyArray1<f64> >, kmer_size: usize) -> Bound<'pyt, PyArray2<f64> > {
+
+
+    let corpus: Vec<String> = corpus_list.extract().expect("Error unpacking Python object to Rust");
+    let vocabulary:HashMap<String,usize>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
+
+    let rust_idf= idf.to_owned_array();
     let mut count_array= Array2::<f64>::zeros((corpus.len(), vocabulary.len()));
 
     for (row_index,seq) in corpus.iter().enumerate() {
         
-        let mut word= String::new();
+        let nb_words= get_number_of_kmer(seq, kmer_size);
 
-        for (i,c) in seq.chars().enumerate() {
-            
-            word.push(c);
-            
-            if ((i+1) % kmer_size == 0 ) && vocabulary.contains_key(&word) {
+        for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
 
-                let col_index= vocabulary[&word];
+            let word= from_utf8(word_in_bytes).unwrap();
+            
+            if vocabulary.contains_key(word) {
+
+                let col_index= vocabulary[word];
                 count_array.column_mut(col_index)[row_index] += 1.0;
-                word= String::new();
             }
-
-            else if (i+1) % kmer_size == 0 {
-                word= String::new();
-            }
-        }   
-    }
-
-    
-    for (key,val) in vocabulary.iter() {
-        
-        for mut row in count_array.rows_mut(){
-
-            row[*val]= row[*val] * idf[key]; 
-            
         }
+
+        count_array.row_mut(row_index).div_assign(nb_words as f64);
+        count_array.row_mut(row_index).mul_assign(&rust_idf);
+       
     }
 
-    count_array.into_pyarray(py)
+    count_array.into_pyarray_bound(py)
 
 }
 
 #[pyfunction] 
-pub fn fit_idf_rust( corpus: Vec<&str>, vocabulary: HashMap<String,usize>, kmer_size: usize )
- -> (HashMap<String, usize> , HashMap<String, f64>){
+pub fn fit_idf_rust<'a,'pyt>(py: Python<'pyt>, corpus_list: &Bound<'pyt, PyList> , vocabulary_py: &Bound< PyDict >, kmer_size: usize )
+ -> (Bound<'pyt, PyArray1<i32> >, Bound<'pyt, PyArray1<f64> >){
     
-    let n_documents= corpus.len();
-    let mut df: HashMap<String,usize> = HashMap::new();
-    
-    for key in vocabulary.keys() {
-        df.insert(key.clone(), 0);
-    }
+    let vocabulary:HashMap<String,usize>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
 
-    df= compute_df(&corpus, df, kmer_size);
+    let corpus: Vec<String> = corpus_list.extract().expect("Error unpacking Python object to Rust");
+
+    let n_documents= corpus.len();
+
+    let df= compute_df(&corpus, &vocabulary, kmer_size);
     let idf= compute_idf(&df, n_documents);
 
-    (df,idf)
+    (df.into_pyarray_bound(py),idf.into_pyarray_bound(py))
     
 }
 
