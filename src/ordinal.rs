@@ -84,7 +84,7 @@ pub fn ordinal_before(sequence: &str, ncols: usize) -> Array1<f32>{
 /// Returns the ordinal encodings in a Vec for the sequences passed to this fucntion.
 ///
 /// this function parse the type and length of padding for the encoding
-fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Array1<f32>> {
+fn encode_chunks(chunk: &[String], pad_type: &str, vec_length: usize ) -> Vec<Array1<f32>> {
 
     
     let mut encoded_sequences= Vec::new();
@@ -148,7 +148,7 @@ fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Arra
 ///
 /// This function splits the sequences to encode and distributes them to different threads. 
 /// the usize is used to keep the order of sequences and the Vec<Array2<i8>> represent the ordinal encodings of the genomic sequences
-fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus: usize) -> Vec<(usize, Vec<Array1<f32>>)> {
+fn multithreads(sequences: Vec<String>, pad_type: &str, vec_length: usize, nb_cpus: usize) -> Vec<(usize, Vec<Array1<f32>>)> {
 
 
     //determine size of chunks based on number of threads and add 1 to be sure 
@@ -200,14 +200,14 @@ fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus
 pub fn ordinal_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, PyList>, pad_type: &str, pad_length: i128, n_jobs: i16 ) ->  Bound<'pyt,PyList>{
     
     let sequences: Vec<String> = sequences_py.extract().expect("Error unpacking Python object to Rust");
-    let seq_refs: Vec<&str> = sequences.iter().map(AsRef::as_ref).collect();
+    
 
-    let vec_length= utils::get_length(&seq_refs, pad_length);
+    let vec_length= utils::get_length(&sequences, pad_length);
     let cpu_to_use= utils::check_nb_cpus(n_jobs);
 
     let py_list= PyList::empty_bound(py);
 
-    let results=py.allow_threads(move || multithreads(seq_refs, pad_type, vec_length, cpu_to_use));
+    let results=py.allow_threads(move || multithreads(sequences, pad_type, vec_length, cpu_to_use));
 
   
     for (_index, sequences ) in results {

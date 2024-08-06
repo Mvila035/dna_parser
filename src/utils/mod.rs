@@ -8,7 +8,7 @@ use std::cmp::Ordering;
 ///
 /// if pad_length = -1 searches for the shortest sequence
 /// if pad_length = -2 searches for the longest sequence
-pub fn get_length(sequences: &[&str], pad_length: i128) -> usize {
+pub fn get_length(sequences: &[String], pad_length: i128) -> usize {
 
 
     let mut length= sequences[0].len();

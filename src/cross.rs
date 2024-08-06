@@ -88,7 +88,7 @@ pub fn cross_before(sequence: &str, ncols: usize) -> Array2<i8>{
 /// Returns the cross encodings in a Vec for the sequences passed to this fucntion.
 ///
 /// this function parse the type and length of padding for the encoding 
-fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Array2<i8>> {
+fn encode_chunks(chunk: &[String], pad_type: &str, vec_length: usize ) -> Vec<Array2<i8>> {
 
     
     let mut encoded_sequences= Vec::new();
@@ -152,7 +152,7 @@ fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Arra
 ///
 /// This function splits the sequences to encode and distributes them to different threads. 
 /// the usize is used to keep the order of sequences and the Vec<Array2<i8>> represent the onehot encodings of the genomic sequences
-fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus: usize) -> Vec<(usize, Vec<Array2<i8>>)> {
+fn multithreads(sequences: Vec<String>, pad_type: &str, vec_length: usize, nb_cpus: usize) -> Vec<(usize, Vec<Array2<i8>>)> {
 
     //determine size of chunks based on number of threads and add 1 to be sure 
     //to have a number of chunks equal to nb of cpus and not superior
@@ -205,15 +205,13 @@ pub fn cross_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, 
 
 
     let sequences: Vec<String> = sequences_py.extract().expect("Error unpacking Python object to Rust");
-    let seq_refs: Vec<&str> = sequences.iter().map(AsRef::as_ref).collect();
 
-
-    let vec_length= utils::get_length(&seq_refs, pad_length);
+    let vec_length= utils::get_length(&sequences, pad_length);
     let cpu_to_use= utils::check_nb_cpus(n_jobs);
 
     let py_list= PyList::empty_bound(py);
 
-    let results=py.allow_threads(move || multithreads(seq_refs, pad_type, vec_length, cpu_to_use));
+    let results=py.allow_threads(move || multithreads(sequences, pad_type, vec_length, cpu_to_use));
 
   
     for (_index, sequences ) in results {
