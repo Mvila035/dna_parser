@@ -1,7 +1,7 @@
 from .dna_parser import *
 
 
-def onehot_encoding(sequences, pad_type= "after", pad_length= 0, n_jobs= 1):
+def onehot_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1):
 
     return onehot_encoding_rust(sequences, pad_type, pad_length, n_jobs)
 
