@@ -1,4 +1,6 @@
 from .dna_parser import *
+from scipy.sparse import csr_matrix
+
 
 class NotFittedError(Exception):
     pass
@@ -65,9 +67,11 @@ class Tfidf:
             raise NotFittedError("This Tidf instance is not fitted. Please use fit()")
         
         if not sequences:
-            return transform_idf_rust(self.corpus, self.vocabulary, self.idf, self.kmer_size)
+            data, rows, cols, shape= transform_idf_rust(self.corpus, self.vocabulary, self.idf, self.kmer_size)
+
+        else: 
+            data, rows, cols, shape= transform_idf_rust(sequences, self.vocabulary, self.idf, self.kmer_size)
 
 
-        return transform_idf_rust(sequences, self.vocabulary, self.idf, self.kmer_size)
-
+        return csr_matrix((data,(rows,cols)), shape= shape)
     

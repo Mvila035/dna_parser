@@ -65,7 +65,7 @@ fn compute_idf<'a>(df: &Array1<i32>, nb_document: usize)-> Array1<f64>{
 
     for (index,_val) in df.into_iter().enumerate(){
 
-        idf[index]= ( nb_document as f64 / (df[index]+1) as f64 ).ln();
+        idf[index]= ( ( nb_document) as f64 / (df[index]+1) as f64 ).ln();
 
     }
 
@@ -85,17 +85,21 @@ fn get_number_of_kmer(sequence: &str, kmer_size: usize) -> usize {
 
 #[pyfunction]
 pub fn transform_idf_rust<'pyt>(py:  Python<'pyt>, corpus_list: &Bound<'pyt, PyList>,
- vocabulary_py: &Bound< PyDict > , idf: Bound< PyArray1<f64> >, kmer_size: usize) -> Bound<'pyt, PyArray2<f64> > {
+ vocabulary_py: &Bound< PyDict > , idf: Bound< PyArray1<f64> >, kmer_size: usize) -> (Vec<f64>,Vec<usize>,Vec<usize>, (usize,usize)){
 
 
     let corpus: Vec<String> = corpus_list.extract().expect("Error unpacking Python object to Rust");
     let vocabulary:HashMap<String,usize>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
 
+    let mut return_data= Vec::<f64>::new();
+    let mut return_rows= Vec::<usize>::new();
+    let mut return_cols= Vec::<usize>::new();
+
     let rust_idf= idf.to_owned_array();
-    let mut count_array= Array2::<f64>::zeros((corpus.len(), vocabulary.len()));
 
     for (row_index,seq) in corpus.iter().enumerate() {
         
+        let mut count_dict= HashMap::<usize,usize>::new();
         let nb_words= get_number_of_kmer(seq, kmer_size);
 
         for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
@@ -105,16 +109,28 @@ pub fn transform_idf_rust<'pyt>(py:  Python<'pyt>, corpus_list: &Bound<'pyt, PyL
             if vocabulary.contains_key(word) {
 
                 let col_index= vocabulary[word];
-                count_array.column_mut(col_index)[row_index] += 1.0;
+                *count_dict.entry(col_index).or_insert(0) += 1;
+                
             }
         }
 
-        count_array.row_mut(row_index).div_assign(nb_words as f64);
-        count_array.row_mut(row_index).mul_assign(&rust_idf);
+        for (col_index, count) in count_dict.iter() {
+
+            let tf= *count as f64 / nb_words as f64;
+            let idf= rust_idf[*col_index];
+            let tfidf= tf  * idf;
+
+            if tfidf != 0.0 {
+                return_data.push(tfidf);
+                return_cols.push(*col_index);
+                return_rows.push(row_index);
+            }
+
+        }
        
     }
 
-    count_array.into_pyarray_bound(py)
+    (return_data, return_rows, return_cols, (corpus.len(), vocabulary.len()))
 
 }
 
