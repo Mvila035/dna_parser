@@ -7,6 +7,7 @@ pub mod ordinal;
 pub mod fasta_files;
 pub mod utils;
 pub mod cross;
+pub mod zcurve;
 
 
 use pyo3::prelude::*;
@@ -22,6 +23,7 @@ use tfidf::*;
 use ordinal::*;
 use fasta_files::*;
 use cross::*;
+use zcurve::*;
 
 
 
@@ -40,6 +42,8 @@ fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
     m.add_function(wrap_pyfunction!(seq_from_fasta,m)?)?;
     m.add_function(wrap_pyfunction!(metadata_from_fasta,m)?)?;
     m.add_function(wrap_pyfunction!(cross_encoding_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(zcurve_encoding_rust,m)?)?;
+
 
     Ok(())
 }
