@@ -23,3 +23,7 @@ def random_seq(length, nb_of_seq, seq_type= "dna", n_jobs= 1):
 def zcurve_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1):
 
     return zcurve_encoding_rust(sequences, pad_type, pad_length, n_jobs)
+
+def chaos_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1):
+
+    return chaos_encoding_rust(sequences, pad_type, pad_length, n_jobs)
