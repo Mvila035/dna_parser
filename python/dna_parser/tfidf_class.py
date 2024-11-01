@@ -55,10 +55,6 @@ class Tfidf:
         self.is_df_uptodate= True
         self.is_idf_uptodate= True
 
-    def fit_transform(self):
-        #todo
-        pass
-
     def transform(self, sequences= None):
         
         #check sequences 
@@ -74,4 +70,9 @@ class Tfidf:
 
 
         return csr_matrix((data,(rows,cols)), shape= shape)
+    
+    def fit_transform(self, sequences= None):
+        
+        self.fit()
+        return self.transform(sequences)
     
