@@ -22,9 +22,9 @@ pub fn map_vocabulary_rust<'pyt>(corpus_list: &Bound<'pyt, PyList>, vocabulary_p
 
         for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
 
-            let word= from_utf8(word_in_bytes).unwrap();
+            let word= from_utf8(word_in_bytes).unwrap().to_ascii_lowercase();
 
-            if !vocabulary.contains_key(word) {
+            if !vocabulary.contains_key(&word) {
 
                 vocabulary.insert(word.to_string(), vocabulary.len());
             }
@@ -46,12 +46,12 @@ fn compute_df<'a>(corpus: &Vec<String>, vocabulary: &HashMap<String, usize> , km
 
         for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
 
-            let word= from_utf8(word_in_bytes).unwrap();
+            let word= from_utf8(word_in_bytes).unwrap().to_ascii_lowercase();
 
-            if !words_in_seq.contains(word) {
+            if !words_in_seq.contains(&word) {
+                
+                df[vocabulary[&word]] +=1;
                 words_in_seq.insert(word);
-
-                df[vocabulary[word]] +=1;
             }
 
         }
@@ -104,11 +104,11 @@ pub fn transform_idf_rust<'pyt>(py:  Python<'pyt>, corpus_list: &Bound<'pyt, PyL
 
         for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
 
-            let word= from_utf8(word_in_bytes).unwrap();
+            let word= from_utf8(word_in_bytes).unwrap().to_ascii_lowercase();
             
-            if vocabulary.contains_key(word) {
+            if vocabulary.contains_key(&word) {
 
-                let col_index= vocabulary[word];
+                let col_index= vocabulary[&word];
                 *count_dict.entry(col_index).or_insert(0) += 1;
                 
             }
