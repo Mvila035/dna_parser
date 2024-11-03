@@ -37,30 +37,19 @@ def test_chaos():
 
     results= chaos_encoding([DNA_SEQUENCES[0]])[0]
 
-    print(results)
+    for iy, ix in numpy.ndindex(expected.shape):
 
-    test_matrix= results == expected
-
-    for index, x in numpy.ndenumerate(test_matrix):
-        
-        if x == False:
-            assert False
+        assert numpy.isclose(results[iy, ix], expected[iy, ix])
     
-    assert True
 
 def test_caps():
     
     results1= chaos_encoding([DNA_SEQUENCES[0]])[0]
     results2= chaos_encoding([DNA_SEQUENCES[-1]])[0]
 
-    test_matrix= results1 == results2
+    for iy, ix in numpy.ndindex(results1.shape):
 
-    for index, x in numpy.ndenumerate(test_matrix):
-        
-        if x == False:
-            assert False
-    
-    assert True
+        assert numpy.isclose(results1[iy, ix], results2[iy, ix])
 
 #for now only ACGT are mapped any other char result in not updating the values
 def test_unexpected_char():
@@ -68,12 +57,8 @@ def test_unexpected_char():
 
     results= chaos_encoding([DNA_SEQUENCES[1]])[0]
 
-    test_matrix= results == expected
 
-    for index, x in numpy.ndenumerate(test_matrix):
-        
-        if x == False:
-            assert False
-    
-    assert True
+    for iy, ix in numpy.ndindex(expected.shape):
+
+        assert numpy.isclose(results[iy, ix], expected[iy, ix])
 

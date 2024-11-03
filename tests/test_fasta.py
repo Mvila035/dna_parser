@@ -14,10 +14,9 @@ def test_load_fasta():
         
         print(expected_tup, result_tup)
 
-        if expected_tup != result_tup:
-            assert False
+        assert expected_tup == result_tup
     
-    assert True
+    
 
 def test_seq_from_fasta():
     

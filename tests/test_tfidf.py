@@ -42,8 +42,6 @@ def test_tfidf():
     encodings= tfidf.fit_transform()
     encodings= encodings.toarray()
     
-    
-
     for iy, ix in numpy.ndindex(encodings.shape):
 
         assert numpy.isclose(encodings[iy, ix], expected[iy, ix])

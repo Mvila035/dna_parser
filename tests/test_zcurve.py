@@ -41,10 +41,7 @@ def test_zcurve():
 
     for index, x in numpy.ndenumerate(test_matrix):
         
-        if x == False:
-            assert False
-    
-    assert True
+        assert x
 
 def test_caps():
     
@@ -55,10 +52,7 @@ def test_caps():
 
     for index, x in numpy.ndenumerate(test_matrix):
         
-        if x == False:
-            assert False
-    
-    assert True
+        assert x
 
 #for now only ACGT are mapped any other char result in not updating the values
 def test_unexpected_char():
@@ -70,7 +64,4 @@ def test_unexpected_char():
 
     for index, x in numpy.ndenumerate(test_matrix):
         
-        if x == False:
-            assert False
-    
-    assert True
+        assert x

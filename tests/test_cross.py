@@ -26,10 +26,7 @@ def test_ordinal():
 
     for index, x in numpy.ndenumerate(test_matrix):
         
-        if x == False:
-            assert False
-    
-    assert True
+        assert x
     
 
 
@@ -42,12 +39,9 @@ def test_caps():
 
     for index, x in numpy.ndenumerate(test_matrix):
         
-        if x == False:
-            assert False
-    
-    assert True
+        assert x
 
-#for now only ACGT are maps any other char result in [0,0,0,0] vec
+#for now only ACGT are maps any other char result in [0,0] vec
 def test_unexpected_char():
     expected= numpy.array([[0,-1],[0,1], [0,0], [0,0], [1,0], [0,0]  ])
 
@@ -57,7 +51,4 @@ def test_unexpected_char():
 
     for index, x in numpy.ndenumerate(test_matrix):
         
-        if x == False:
-            assert False
-    
-    assert True
+        assert x
