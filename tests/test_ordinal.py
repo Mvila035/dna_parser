@@ -22,9 +22,11 @@ def test_ordinal():
 
     results= ordinal_encoding([DNA_SEQUENCES[0]])[0]
 
-    for index, val in enumerate(results):
+    test_matrix= results == expected
 
-        assert numpy.isclose(val, expected[index])
+    for index, x in numpy.ndenumerate(test_matrix):
+        
+        assert x
     
 
 def test_caps():
@@ -32,17 +34,22 @@ def test_caps():
     results1= ordinal_encoding([DNA_SEQUENCES[0]])[0]
     results2= ordinal_encoding([DNA_SEQUENCES[-1]])[0]
 
-    for index, val in enumerate(results1):
+    test_matrix= results1 == results2
 
-        assert numpy.isclose(val, results2[index])
+    for index, x in numpy.ndenumerate(test_matrix):
+        
+        assert x
 
-#for now only ACGT are maps any other char is mapped to a zero
+
+
+#for now only ACGT are maps any other char result in 0 vec
 def test_unexpected_char():
     expected= numpy.array([0.25, 1.0, 0, 0, 0.75, 0 ])
 
     results= ordinal_encoding([DNA_SEQUENCES[1]])[0]
 
-    for index, val in enumerate(results):
+    test_matrix= results == expected
 
-        assert numpy.isclose(val, expected[index])
-    
+    for index, x in numpy.ndenumerate(test_matrix):
+        
+        assert x
