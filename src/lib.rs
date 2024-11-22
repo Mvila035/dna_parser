@@ -9,6 +9,7 @@ pub mod utils;
 pub mod cross;
 pub mod zcurve;
 pub mod chaos_game;
+pub mod eiip;
 
 
 use pyo3::prelude::*;
@@ -26,6 +27,7 @@ use fasta_files::*;
 use cross::*;
 use zcurve::*;
 use chaos_game::*;
+use eiip::*;
 
 
 
@@ -46,6 +48,7 @@ fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
     m.add_function(wrap_pyfunction!(cross_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(zcurve_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(chaos_encoding_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(eiip_encoding_rust,m)?)?;
 
 
     Ok(())

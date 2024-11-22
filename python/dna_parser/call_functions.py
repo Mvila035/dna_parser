@@ -26,3 +26,7 @@ def zcurve_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1):
 def chaos_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1):
 
     return chaos_encoding_rust(sequences, pad_type, pad_length, n_jobs)
+
+def eiip_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1):
+
+    return eiip_encoding_rust(sequences, pad_type, pad_length, n_jobs)
