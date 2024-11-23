@@ -10,6 +10,7 @@ pub mod cross;
 pub mod zcurve;
 pub mod chaos_game;
 pub mod eiip;
+pub mod dna_walk;
 
 
 use pyo3::prelude::*;
@@ -28,6 +29,7 @@ use cross::*;
 use zcurve::*;
 use chaos_game::*;
 use eiip::*;
+use dna_walk::*;
 
 
 
@@ -49,6 +51,7 @@ fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
     m.add_function(wrap_pyfunction!(zcurve_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(chaos_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(eiip_encoding_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(dna_walk_rust,m)?)?;
 
 
     Ok(())
