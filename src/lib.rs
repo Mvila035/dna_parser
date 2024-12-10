@@ -12,6 +12,7 @@ pub mod chaos_game;
 pub mod eiip;
 pub mod dna_walk;
 pub mod fickett;
+pub mod atomic_number;
 
 
 use pyo3::prelude::*;
@@ -32,6 +33,7 @@ use chaos_game::*;
 use eiip::*;
 use dna_walk::*;
 use fickett::*;
+use atomic_number::*;
 
 
 
@@ -55,6 +57,7 @@ fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
     m.add_function(wrap_pyfunction!(eiip_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(dna_walk_rust,m)?)?;
     m.add_function(wrap_pyfunction!(fickett_score_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(atomic_encoding_rust,m)?)?;
 
 
     Ok(())
