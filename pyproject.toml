@@ -13,6 +13,9 @@ classifiers = [
 
 dependencies = ['numpy >= 1.16.0', 'scipy >= 1.3.0']
 
+[project.optional-dependencies]
+dev = ["pytest","mkdocs"]
+
 [tool.maturin]
 python-source = "python"
 
