@@ -17,7 +17,7 @@ fn walk_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i64>, Dim<[usiz
     let mut previous_x= 0 as i64;
     let mut previous_y= 0 as i64;
 
-    for item in array.axis_iter_mut(Axis(1)).zip_longest(sequence.chars()) {
+    for item in array.axis_iter_mut(Axis(0)).zip_longest(sequence.chars()) {
 
         let nucleotide: char;
         let mut col: ArrayBase<ViewRepr<&mut i64>, Dim<[usize; 1]>>;
@@ -96,7 +96,7 @@ fn walk_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i64>, Dim<[usi
     let mut previous_y= 0 as i64;
 
 
-    let array_rev = array.axis_iter_mut(Axis(1)).rev();
+    let array_rev = array.axis_iter_mut(Axis(0)).rev();
     let sequence_rev: Vec<char>= sequence.chars().rev().collect();
 
     let zip_tup= array_rev.zip(sequence_rev).rev();
@@ -244,7 +244,7 @@ pub fn dna_walk_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, PyList
     let vec_length= utils::get_length(&sequences, pad_length);
     let cpu_to_use= utils::check_nb_cpus(n_jobs);
 
-    let mut final_array= Array3::<i64>::zeros((sequences.len(), 2, vec_length));
+    let mut final_array= Array3::<i64>::zeros((sequences.len(), vec_length, 2));
 
 
     final_array= py.allow_threads(move || multithreads(sequences, pad_type, final_array, cpu_to_use));
