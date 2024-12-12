@@ -46,3 +46,34 @@ def fickett_score(sequences, n_jobs= 1):
 def atomic_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1):
 
     return atomic_encoding_rust(sequences, pad_type, pad_length, n_jobs)
+
+def load_fasta(path):
+
+    if type(path) is str:
+        return load_fasta_rust(path)
+    
+    elif type(path) is list:
+        
+        sequences= [ seq for current_file in path for seq in load_fasta_rust(current_file)]
+        return sequences
+
+def load_metadata(path):
+
+    if type(path) is str:
+        return metadata_from_fasta_rust(path)
+    
+    elif type(path) is list:
+        
+        sequences= [ seq for current_file in path for seq in metadata_from_fasta_rust(current_file)]
+        return sequences
+
+        
+def load_sequences(path):
+
+    if type(path) is str:
+        return seq_from_fasta_rust(path)
+    
+    elif type(path) is list:
+        
+        sequences= [ seq for current_file in path for seq in seq_from_fasta_rust(current_file)]
+        return sequences

@@ -1,5 +1,5 @@
 import pytest
-from dna_parser import seq_from_fasta, metadata_from_fasta, load_fasta
+from dna_parser import load_sequences, load_metadata, load_fasta
 import numpy
 
 def test_load_fasta():
@@ -22,7 +22,7 @@ def test_seq_from_fasta():
     
     expected= ["acgtatgcgtcgtc", "cccgtga---gtcgat", "xgtcgycaaatcg-?"]
 
-    results= seq_from_fasta("tests/seq_test.fasta")
+    results= load_sequences("tests/seq_test.fasta")
 
     assert expected == results
 
@@ -31,6 +31,24 @@ def test_seq_metadata_fasta():
 
     expected= [">sequence1", ">sequence2", ">sequence3"]
 
-    results= metadata_from_fasta("tests/seq_test.fasta")
+    results= load_metadata("tests/seq_test.fasta")
 
     assert expected == results
+
+def test_list_of_paths():
+    paths= ["tests/seq_test.fasta","tests/seq_test.fasta","tests/seq_test.fasta"]
+
+    fasta_expected= [ (">sequence1", "acgtatgcgtcgtc"), (">sequence2","cccgtga---gtcgat"), (">sequence3","xgtcgycaaatcg-?")]*3
+    metadata_expected= [">sequence1", ">sequence2", ">sequence3"]*3
+    sequences_expected= ["acgtatgcgtcgtc", "cccgtga---gtcgat", "xgtcgycaaatcg-?"]*3
+    
+    fasta= load_fasta(paths)
+    metadata= load_metadata(paths)
+    sequences= load_sequences(paths)
+
+    assert fasta == fasta_expected
+    assert metadata == metadata_expected
+    assert sequences == sequences_expected
+   
+
+

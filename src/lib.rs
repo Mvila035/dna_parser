@@ -48,9 +48,9 @@ fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
     m.add_function(wrap_pyfunction!(transform_idf_rust,m)?)?;
     m.add_function(wrap_pyfunction!(fit_idf_rust,m)?)?;
     m.add_function(wrap_pyfunction!(ordinal_encoding_rust,m)?)?;
-    m.add_function(wrap_pyfunction!(load_fasta,m)?)?;
-    m.add_function(wrap_pyfunction!(seq_from_fasta,m)?)?;
-    m.add_function(wrap_pyfunction!(metadata_from_fasta,m)?)?;
+    m.add_function(wrap_pyfunction!(load_fasta_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(seq_from_fasta_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(metadata_from_fasta_rust,m)?)?;
     m.add_function(wrap_pyfunction!(cross_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(zcurve_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(chaos_encoding_rust,m)?)?;
