@@ -80,12 +80,6 @@ fn get_position_prob(nt_value: f32, nt_type: &str) -> f32 {
 
             let position_vec= POSITION_PROB.get(nt_type).unwrap();
             let position_prob= position_vec[index] * POSITION_WEIGHT.get(nt_type).unwrap();
-
-            println!("{},{}", position_vec[index], POSITION_WEIGHT.get(nt_type).unwrap());
-            match io::stdout().flush() {
-                Ok(_) => {},
-                Err(_) => std::process::exit(1)
-            }
             
             return position_prob
         }
@@ -99,20 +93,8 @@ fn get_content_prob(nt_value: f32, nt_type: &str) -> f32 {
     for (index, value) in CONTENT_PARA.iter().enumerate() {
         if nt_value >= **value {
 
-            println!("{},{}", nt_value, value);
-            match io::stdout().flush() {
-                Ok(_) => {},
-                Err(_) => std::process::exit(1)
-            }
-
             let content_vec= CONTENT_PROB.get(nt_type).unwrap();
             let content_prob= content_vec[index] * CONTENT_WEIGHT.get(nt_type).unwrap();
-
-            println!("{},{}", content_vec[index], CONTENT_WEIGHT.get(nt_type).unwrap());
-            match io::stdout().flush() {
-                Ok(_) => {},
-                Err(_) => std::process::exit(1)
-            }
             
             return content_prob
         }
