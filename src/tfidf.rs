@@ -7,16 +7,17 @@ use numpy::IntoPyArray;
 use numpy::PyArrayMethods;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
+use ahash::{AHasher, RandomState};
 use std::collections::{HashMap, HashSet};
 
 
 // ######################################################################################
 
 #[pyfunction] 
-pub fn map_vocabulary_rust<'pyt>(corpus_list: &Bound<'pyt, PyList>, vocabulary_py: &Bound< PyDict >, kmer_size: usize) -> HashMap<String,usize> {
+pub fn map_vocabulary_rust<'pyt>(corpus_list: &Bound<'pyt, PyList>, vocabulary_py: &Bound< PyDict >, kmer_size: usize) -> HashMap<String,usize, RandomState> {
 
     let corpus: Vec<String> = corpus_list.extract().expect("Error unpacking Python object to Rust");
-    let mut vocabulary:HashMap<String,usize>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
+    let mut vocabulary:HashMap<String,usize, RandomState>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
 
     for seq in corpus {
 
@@ -36,13 +37,13 @@ pub fn map_vocabulary_rust<'pyt>(corpus_list: &Bound<'pyt, PyList>, vocabulary_p
 
 
 
-fn compute_df<'a>(corpus: &Vec<String>, vocabulary: &HashMap<String, usize> , kmer_size: usize ) -> Array1<i32>  {
+fn compute_df<'a>(corpus: &Vec<String>, vocabulary: &HashMap<String, usize, RandomState> , kmer_size: usize ) -> Array1<i32>  {
 
     let mut df= Array1::<i32>::zeros(vocabulary.len());
 
     for seq in corpus {
         
-        let mut words_in_seq= HashSet::new();
+        let mut words_in_seq:HashSet<String, RandomState>= HashSet::default();
 
         for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
 
@@ -89,7 +90,7 @@ pub fn transform_idf_rust<'pyt>(py:  Python<'pyt>, corpus_list: &Bound<'pyt, PyL
 
 
     let corpus: Vec<String> = corpus_list.extract().expect("Error unpacking Python object to Rust");
-    let vocabulary:HashMap<String,usize>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
+    let vocabulary:HashMap<String,usize, RandomState>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
 
     let mut return_data= Vec::<f64>::new();
     let mut return_rows= Vec::<usize>::new();
@@ -99,7 +100,7 @@ pub fn transform_idf_rust<'pyt>(py:  Python<'pyt>, corpus_list: &Bound<'pyt, PyL
 
     for (row_index,seq) in corpus.iter().enumerate() {
         
-        let mut count_dict= HashMap::<usize,usize>::new();
+        let mut count_dict= HashMap::<usize,usize, RandomState>::default();
         let nb_words= get_number_of_kmer(seq, kmer_size);
 
         for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
@@ -138,7 +139,7 @@ pub fn transform_idf_rust<'pyt>(py:  Python<'pyt>, corpus_list: &Bound<'pyt, PyL
 pub fn fit_idf_rust<'a,'pyt>(py: Python<'pyt>, corpus_list: &Bound<'pyt, PyList> , vocabulary_py: &Bound< PyDict >, kmer_size: usize )
  -> (Bound<'pyt, PyArray1<i32> >, Bound<'pyt, PyArray1<f64> >){
     
-    let vocabulary:HashMap<String,usize>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
+    let vocabulary:HashMap<String,usize, RandomState>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
 
     let corpus: Vec<String> = corpus_list.extract().expect("Error unpacking Python object to Rust");
 
@@ -150,4 +151,6 @@ pub fn fit_idf_rust<'a,'pyt>(py: Python<'pyt>, corpus_list: &Bound<'pyt, PyList>
     (df.into_pyarray_bound(py),idf.into_pyarray_bound(py))
     
 }
+
+
 
