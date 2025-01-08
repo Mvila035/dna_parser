@@ -17,7 +17,7 @@ def test_shape():
 
 def test_onehot():
 
-    expected= numpy.array([[1,0,0,0], [0,1,0,0],  [0,1,0,0]])
+    expected= numpy.array([[0,0,1,0], [1,0,0,0],  [1,0,0,0]])
 
     results= onehot_encoding([DNA_SEQUENCES[0]])[0]
 
@@ -43,7 +43,7 @@ def test_caps():
 
 #for now only ACGT are maps any other char result in [0,0,0,0] vec
 def test_unexpected_char():
-    expected= numpy.array([[1,0,0,0], [0,0,0,1],  [0,0,0,0], [0,0,0,0], [0,0,1,0], [0,0,0,0] ])
+    expected= numpy.array([[0,0,1,0], [0,0,0,1],  [0,0,0,0], [0,0,0,0], [0,1,0,0], [0,0,0,0] ])
 
     results= onehot_encoding([DNA_SEQUENCES[1]])[0]
 
