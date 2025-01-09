@@ -22,16 +22,16 @@ pub fn cross_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i8>, Dim<[
 
         match charac {
 
-            'A' => row.assign(&ArrayView::from(&[0,-1])),
-            'C' => row.assign(&ArrayView::from(&[-1,0])),
-            'G' => row.assign(&ArrayView::from(&[1,0])),
-            'T' => row.assign(&ArrayView::from(&[0,1])),
-            'U' => row.assign(&ArrayView::from(&[0,1])),
-            'a' => row.assign(&ArrayView::from(&[0,-1])),
-            'c' => row.assign(&ArrayView::from(&[-1,0])),
-            'g' => row.assign(&ArrayView::from(&[1,0])),
-            't' => row.assign(&ArrayView::from(&[0,1])),
-            'u' => row.assign(&ArrayView::from(&[0,1])),
+            'A' => row.assign(&ArrayView::from(&[1,1])),
+            'G' => row.assign(&ArrayView::from(&[-1,1])),
+            'C' => row.assign(&ArrayView::from(&[-1,-1])),
+            'T' => row.assign(&ArrayView::from(&[1,-1])),
+            'U' => row.assign(&ArrayView::from(&[1,-1])),
+            'a' => row.assign(&ArrayView::from(&[1,1])),
+            'g' => row.assign(&ArrayView::from(&[-1,1])),
+            'c' => row.assign(&ArrayView::from(&[-1,-1])),
+            't' => row.assign(&ArrayView::from(&[1,-1])),
+            'u' => row.assign(&ArrayView::from(&[1,-1])),
             _ => row.assign(&ArrayView::from(&[0,0])),
         }
     }
@@ -48,17 +48,19 @@ pub fn cross_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i8>, Dim<
 
         match charac {
 
-            'A' => row.assign(&ArrayView::from(&[0,-1])),
-            'C' => row.assign(&ArrayView::from(&[-1,0])),
-            'G' => row.assign(&ArrayView::from(&[1,0])),
-            'T' => row.assign(&ArrayView::from(&[0,1])),
-            'U' => row.assign(&ArrayView::from(&[0,1])),
-            'a' => row.assign(&ArrayView::from(&[0,-1])),
-            'c' => row.assign(&ArrayView::from(&[-1,0])),
-            'g' => row.assign(&ArrayView::from(&[1,0])),
-            't' => row.assign(&ArrayView::from(&[0,1])),
-            'u' => row.assign(&ArrayView::from(&[0,1])),
+            'A' => row.assign(&ArrayView::from(&[1,1])),
+            'G' => row.assign(&ArrayView::from(&[-1,1])),
+            'C' => row.assign(&ArrayView::from(&[-1,-1])),
+            'T' => row.assign(&ArrayView::from(&[1,-1])),
+            'U' => row.assign(&ArrayView::from(&[1,-1])),
+            'a' => row.assign(&ArrayView::from(&[1,1])),
+            'g' => row.assign(&ArrayView::from(&[-1,1])),
+            'c' => row.assign(&ArrayView::from(&[-1,-1])),
+            't' => row.assign(&ArrayView::from(&[1,-1])),
+            'u' => row.assign(&ArrayView::from(&[1,-1])),
             _ => row.assign(&ArrayView::from(&[0,0])),
+
+            
         }
     }
 
