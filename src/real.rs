@@ -11,22 +11,22 @@ use crate::utils;
 /// Returns an Array1<f32> which is the ordinal encoding representation of the genomic sequence
 ///
 /// this function iterates on the sequence to encode it and pad/trim at the end of the sequence.
-pub fn ordinal_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f32>, Dim<[usize; 1]>>){
+pub fn real_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f32>, Dim<[usize; 1]>>){
     
     for (mut col, charac) in array.iter_mut().zip(sequence.chars()){
 
         match charac {
 
-            'A' => *col = 0.25,
-            'C' => *col = 0.50,
-            'G' => *col = 0.75,
-            'T' => *col = 1.0,
-            'U' => *col =1.0,
-            'a' => *col =0.25,
-            'c' => *col =0.50,
-            'g' => *col =0.75,
-            't' => *col = 1.0,
-            'u' => *col = 1.0,
+            'A' => *col = -1.5,
+            'G' => *col = -0.50,
+            'C' => *col = 0.5,
+            'T' => *col = 1.5,
+            'U' => *col = 1.5,
+            'a' => *col = -1.5,
+            'g' => *col = -0.5,
+            'c' => *col = 0.5,
+            't' => *col = 1.5,
+            'u' => *col = 1.5,
             _ => *col = 0.0
 
         }       
@@ -38,7 +38,7 @@ pub fn ordinal_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f32>, Di
 /// Returns an Array1<f32> which is the ordinal encoding representation of the genomic sequence
 ///
 /// this function iterates backward on the sequence to encode it and to pad/trim at the beginning of the sequence
-pub fn ordinal_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f32>, Dim<[usize; 1]>>) { 
+pub fn real_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f32>, Dim<[usize; 1]>>) { 
 
     for (mut col , charac) in  array.iter_mut().rev().zip( sequence.chars().rev() ) {
 
@@ -75,7 +75,7 @@ fn encode_chunks(chunk: &[String], mut array: ArrayBase<ViewRepr<&mut f32>, Dim<
 
         for (seq, sub_array) in chunk.iter().zip(array.axis_iter_mut(Axis(0))) {
 
-            ordinal_after(seq, sub_array);
+            real_after(seq, sub_array);
             
         }
     }
@@ -84,7 +84,7 @@ fn encode_chunks(chunk: &[String], mut array: ArrayBase<ViewRepr<&mut f32>, Dim<
         
         for (seq, sub_array) in chunk.iter().zip(array.axis_iter_mut(Axis(0))) {
 
-            ordinal_before(seq, sub_array); 
+            real_before(seq, sub_array); 
             
         }
     }
@@ -145,7 +145,7 @@ fn multithreads(sequences: Vec<String>, pad_type: &str, mut array: Array2<f32>, 
 /// * `n_jobs` - number of threads to use. 0 to use every cpu
 #[allow(unused_must_use)]
 #[pyfunction]
-pub fn ordinal_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, PyList>, pad_type: &str, pad_length: i128, n_jobs: i16 ) -> Bound<'pyt, PyArray2<f32>> {
+pub fn real_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, PyList>, pad_type: &str, pad_length: i128, n_jobs: i16 ) -> Bound<'pyt, PyArray2<f32>> {
     
     let sequences: Vec<String> = sequences_py.extract().expect("Error unpacking Python object to Rust");
 

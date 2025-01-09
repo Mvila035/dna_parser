@@ -1,5 +1,5 @@
 import pytest
-from dna_parser import ordinal_encoding
+from dna_parser import real_encoding
 import numpy
 
 DNA_SEQUENCES = [
@@ -11,16 +11,16 @@ DNA_SEQUENCES = [
 
 def test_shape():
 
-    results= ordinal_encoding([DNA_SEQUENCES[0]])[0]
+    results= real_encoding([DNA_SEQUENCES[0]])[0]
 
     assert results.shape == (3,)
 
 
-def test_ordinal():
+def test_real():
 
-    expected= numpy.array([0.25, 0.50, 0.50])
+    expected= numpy.array([-1.5, 0.50, 0.50])
 
-    results= ordinal_encoding([DNA_SEQUENCES[0]])[0]
+    results= real_encoding([DNA_SEQUENCES[0]])[0]
 
     test_matrix= results == expected
 
@@ -31,8 +31,8 @@ def test_ordinal():
 
 def test_caps():
     
-    results1= ordinal_encoding([DNA_SEQUENCES[0]])[0]
-    results2= ordinal_encoding([DNA_SEQUENCES[-1]])[0]
+    results1= real_encoding([DNA_SEQUENCES[0]])[0]
+    results2= real_encoding([DNA_SEQUENCES[-1]])[0]
 
     test_matrix= results1 == results2
 
@@ -44,9 +44,9 @@ def test_caps():
 
 #for now only ACGT are maps any other char result in 0 vec
 def test_unexpected_char():
-    expected= numpy.array([0.25, 1.0, 0, 0, 0.75, 0 ])
+    expected= numpy.array([-1.5, 1.5, 0, 0, -0.5, 0 ])
 
-    results= ordinal_encoding([DNA_SEQUENCES[1]])[0]
+    results= real_encoding([DNA_SEQUENCES[1]])[0]
 
     test_matrix= results == expected
 
