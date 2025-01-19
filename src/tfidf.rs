@@ -1,156 +1,124 @@
-
-use std::ops::{DivAssign, MulAssign};
-use std::str::from_utf8;
-use numpy::ndarray::{Array1, Array2};
-use numpy::array::{PyArray1,PyArray2};
-use numpy::IntoPyArray;
-use numpy::PyArrayMethods;
+use numpy::array::PyArray1;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
-use ahash::{AHasher, RandomState};
-use std::collections::{HashMap, HashSet};
+use ahash::HashMap;
+use ahash::HashMapExt;
+use rayon::prelude::*;
+use crate::utils::*;
+use indexmap::IndexMap;
 
+type CsrMatrix= (Py<PyArray1<usize>>, Py<PyArray1<usize>>, Py<PyArray1<usize>>);
+type VocabAndCsrMatrix= (HashMap<String,usize>,Py<PyArray1<usize>>, Py<PyArray1<usize>>, Py<PyArray1<usize>>);
 
-// ######################################################################################
+// transform a sequence into a vec of kmer 
+fn make_kmers(sequence: &str, kmer_size: usize) -> Vec<String> {
+    let mut kmers= Vec::new();
 
-#[pyfunction] 
-pub fn map_vocabulary_rust<'pyt>(corpus_list: &Bound<'pyt, PyList>, vocabulary_py: &Bound< PyDict >, kmer_size: usize) -> HashMap<String,usize, RandomState> {
+    let chars: Vec<char>= sequence.chars().collect();
+    for kmer in chars.chunks(kmer_size) {
+        kmers.push(kmer.iter().collect::<String>().to_lowercase())
+    }
+    
+    kmers
+}
 
-    let corpus: Vec<String> = corpus_list.extract().expect("Error unpacking Python object to Rust");
-    let mut vocabulary:HashMap<String,usize, RandomState>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
+fn count_kmers(kmers: Vec<String>) -> IndexMap<String, usize> {
+    let mut count= IndexMap::new();
 
-    for seq in corpus {
+    for kmer in kmers{
+        *count.entry(kmer).or_insert(0) += 1;
+    }
+    count
+}
 
-        for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
+fn get_counts(sequences: Vec<String>, kmer_size: usize, n_jobs:usize) -> Vec<IndexMap<String,usize>> {
+    
+    create_pool(n_jobs).expect("Error Building the threadpool.").install(|| {
 
-            let word= from_utf8(word_in_bytes).unwrap().to_ascii_lowercase();
+        sequences.par_iter()
+                .map(|sequence| count_kmers(make_kmers(sequence, kmer_size)))
+                .collect()
+   
+    })
+}
 
-            if !vocabulary.contains_key(&word) {
+fn map_vocabulary(sequence_counts: &Vec<IndexMap<String,usize>>) -> HashMap<String,usize> {
+    let mut vocabulary= HashMap::new();
+    let mut col_index= 0;
 
-                vocabulary.insert(word.to_string(), vocabulary.len());
+    for sequence in sequence_counts {
+        for kmer in sequence.keys() {
+            if !vocabulary.contains_key(kmer) {
+                vocabulary.insert(kmer.clone(), col_index);
+                col_index +=1;
             }
-            
         }
     }
-    vocabulary 
+    vocabulary
 }
 
 
-
-fn compute_df<'a>(corpus: &Vec<String>, vocabulary: &HashMap<String, usize, RandomState> , kmer_size: usize ) -> Array1<i32>  {
-
-    let mut df= Array1::<i32>::zeros(vocabulary.len());
-
-    for seq in corpus {
-        
-        let mut words_in_seq:HashSet<String, RandomState>= HashSet::default();
-
-        for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
-
-            let word= from_utf8(word_in_bytes).unwrap().to_ascii_lowercase();
-
-            if !words_in_seq.contains(&word) {
-                
-                df[vocabulary[&word]] +=1;
-                words_in_seq.insert(word);
-            }
-
-        }
-    }
-    df
-}
-
-fn compute_idf<'a>(df: &Array1<i32>, nb_document: usize)-> Array1<f64>{
-
-    let mut idf= Array1::<f64>::zeros(df.len());
-
-    for (index,_val) in df.into_iter().enumerate(){
-
-        idf[index]= ( ( nb_document) as f64 / (df[index]+1) as f64 ).ln();
-
-    }
-
-    idf
-
-}
-
-fn get_number_of_kmer(sequence: &str, kmer_size: usize) -> usize {
-
-    let seq_len= sequence.len();
-
-    if seq_len%kmer_size == 0 { seq_len/kmer_size }
-
-    else { (seq_len/kmer_size) +1 }
-
+#[pyfunction]
+pub fn fit_rust(sequences: Vec<String>, kmer_size: usize, n_jobs: usize) -> HashMap<String,usize> {
+    
+    let sequences_counts= get_counts(sequences, kmer_size, n_jobs);
+    map_vocabulary(&sequences_counts)
 }
 
 #[pyfunction]
-pub fn transform_idf_rust<'pyt>(py:  Python<'pyt>, corpus_list: &Bound<'pyt, PyList>,
- vocabulary_py: &Bound< PyDict > , idf: Bound< PyArray1<f64> >, kmer_size: usize) -> (Vec<f64>,Vec<usize>,Vec<usize>, (usize,usize)){
+pub fn transform_rust(py: Python, sequences: Vec<String>, vocabulary: HashMap<String,usize>, kmer_size: usize, n_jobs: usize)
+ -> CsrMatrix {
 
+    let mut val= Vec::new();
+    let mut row_indices= Vec::new();
+    let mut col_indices= Vec::new();
 
-    let corpus: Vec<String> = corpus_list.extract().expect("Error unpacking Python object to Rust");
-    let vocabulary:HashMap<String,usize, RandomState>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
+    let sequences_counts= get_counts(sequences, kmer_size, n_jobs);
 
-    let mut return_data= Vec::<f64>::new();
-    let mut return_rows= Vec::<usize>::new();
-    let mut return_cols= Vec::<usize>::new();
+    for (row,sequence) in sequences_counts.iter().enumerate() {
 
-    let rust_idf= idf.to_owned_array();
-
-    for (row_index,seq) in corpus.iter().enumerate() {
-        
-        let mut count_dict= HashMap::<usize,usize, RandomState>::default();
-        let nb_words= get_number_of_kmer(seq, kmer_size);
-
-        for word_in_bytes in seq.as_bytes().chunks(kmer_size) {
-
-            let word= from_utf8(word_in_bytes).unwrap().to_ascii_lowercase();
-            
-            if vocabulary.contains_key(&word) {
-
-                let col_index= vocabulary[&word];
-                *count_dict.entry(col_index).or_insert(0) += 1;
-                
+        for (kmer, count) in sequence.iter() {
+            if let Some(&col) = vocabulary.get(kmer) {
+                val.push(*count);
+                row_indices.push(row);
+                col_indices.push(col);
             }
-        }
+        };
 
-        for (col_index, count) in count_dict.iter() {
+    };
 
-            let tf= *count as f64 / nb_words as f64;
-            let idf= rust_idf[*col_index];
-            let tfidf= tf  * idf;
-
-            if tfidf != 0.0 {
-                return_data.push(tfidf);
-                return_cols.push(*col_index);
-                return_rows.push(row_index);
-            }
-
-        }
-       
-    }
-
-    (return_data, return_rows, return_cols, (corpus.len(), vocabulary.len()))
-
-}
-
-#[pyfunction] 
-pub fn fit_idf_rust<'a,'pyt>(py: Python<'pyt>, corpus_list: &Bound<'pyt, PyList> , vocabulary_py: &Bound< PyDict >, kmer_size: usize )
- -> (Bound<'pyt, PyArray1<i32> >, Bound<'pyt, PyArray1<f64> >){
-    
-    let vocabulary:HashMap<String,usize, RandomState>= vocabulary_py.extract().expect("Error unpacking Python object to Rust");
-
-    let corpus: Vec<String> = corpus_list.extract().expect("Error unpacking Python object to Rust");
-
-    let n_documents= corpus.len();
-
-    let df= compute_df(&corpus, &vocabulary, kmer_size);
-    let idf= compute_idf(&df, n_documents);
-
-    (df.into_pyarray_bound(py),idf.into_pyarray_bound(py))
+    ( PyArray1::from_vec_bound(py, val).into(),
+      PyArray1::from_vec_bound(py, row_indices).into(),
+      PyArray1::from_vec_bound(py, col_indices).into(),
+    )
     
 }
 
+#[pyfunction]
+pub fn fit_transform_rust(py: Python, sequences: Vec<String>, kmer_size: usize, n_jobs: usize)-> VocabAndCsrMatrix {
 
+    let sequences_counts= get_counts(sequences, kmer_size, n_jobs);
+    let vocabulary= map_vocabulary(&sequences_counts);
 
+    let mut val= Vec::new();
+    let mut row_indices= Vec::new();
+    let mut col_indices= Vec::new();
+
+    for (row,sequence) in sequences_counts.iter().enumerate() {
+
+        for (kmer, count) in sequence.iter() {
+            if let Some(&col) = vocabulary.get(kmer) {
+                val.push(*count);
+                row_indices.push(row);
+                col_indices.push(col);
+            }
+        };
+
+    };
+
+    (vocabulary,
+      PyArray1::from_vec_bound(py, val).into(),
+      PyArray1::from_vec_bound(py, row_indices).into(),
+      PyArray1::from_vec_bound(py, col_indices).into(),
+    )
+
+}

@@ -15,6 +15,7 @@ pub mod fickett;
 pub mod atomic_number;
 
 
+
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 use pyo3::types::PyModule;
@@ -38,15 +39,13 @@ use atomic_number::*;
 
 
 
+
 #[pymodule]
 fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
 
     m.add_function(wrap_pyfunction!(onehot_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(make_kmers,m)?)?;
     m.add_function(wrap_pyfunction!(random_seq_rust,m)?)?;
-    m.add_function(wrap_pyfunction!(map_vocabulary_rust,m)?)?;
-    m.add_function(wrap_pyfunction!(transform_idf_rust,m)?)?;
-    m.add_function(wrap_pyfunction!(fit_idf_rust,m)?)?;
     m.add_function(wrap_pyfunction!(real_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(load_fasta_rust,m)?)?;
     m.add_function(wrap_pyfunction!(seq_from_fasta_rust,m)?)?;
@@ -58,6 +57,10 @@ fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
     m.add_function(wrap_pyfunction!(dna_walk_rust,m)?)?;
     m.add_function(wrap_pyfunction!(fickett_score_rust,m)?)?;
     m.add_function(wrap_pyfunction!(atomic_encoding_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(fit_transform_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(fit_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(transform_rust,m)?)?;
+    
 
 
     Ok(())

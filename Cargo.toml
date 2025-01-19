@@ -16,3 +16,5 @@ numpy= "0.21"
 num_cpus = "1.15.0"
 ahash = "0.8.11"
 phf = { version = "0.11", features = ["macros"] }
+rayon = "1.10.0"
+indexmap = "2.7.0"

@@ -1,6 +1,7 @@
 
 use num_cpus;
 use std::cmp::Ordering;
+use rayon::{prelude::*, ThreadPoolBuildError};
 
 
 /// Returns a usize representing the length that the sequences should have after padding/trimming
@@ -79,3 +80,13 @@ pub fn check_nb_cpus(n_jobs: i16) -> usize {
     }
 
 }
+
+pub fn create_pool(num_threads: usize) -> Result<rayon::ThreadPool, ThreadPoolBuildError> {
+    match rayon::ThreadPoolBuilder::new()
+       .num_threads(num_threads)
+       .build()
+    {
+       Err(e) => Err(e.into()),
+       Ok(pool) => Ok(pool),
+    }
+ }
