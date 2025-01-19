@@ -14,8 +14,8 @@ use crate::utils;
 
 fn walk_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i64>, Dim<[usize; 2]>>) {
 
-    let mut previous_x= 0 as i64;
-    let mut previous_y= 0 as i64;
+    let mut previous_x= 0_i64;
+    let mut previous_y= 0_i64;
 
     for item in array.axis_iter_mut(Axis(0)).zip_longest(sequence.chars()) {
 
@@ -41,43 +41,43 @@ fn walk_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i64>, Dim<[usiz
         match nucleotide {
 
             'a'=> { col[0] = previous_x-1;
-                previous_x= previous_x-1;
+                previous_x -= 1;
                 col[1]= previous_y;},
 
             'A'=> { col[0] = previous_x-1;
-                previous_x= previous_x-1;
+                previous_x -= 1;
                 col[1]= previous_y;},
 
             'c'=> { col[1] = previous_y-1;
-                previous_y= previous_y-1;
+                previous_y -= 1;
                 col[0]= previous_x;},
 
             'C'=> { col[1] = previous_y-1;
-                previous_y= previous_y-1;
+                previous_y -= 1;
                 col[0]= previous_x;},
 
             'g'=> { col[1]= previous_y+1;
-                previous_y= previous_y+1;
+                previous_y += 1;
                 col[0]= previous_x;},
 
             'G'=> { col[1]= previous_y+1;
-                previous_y= previous_y+1;
+                previous_y += 1;
                 col[0]= previous_x;},
 
             't'=> { col[0] = previous_x+1;
-                previous_x= previous_x+1;
+                previous_x += 1;
                 col[1]= previous_y;},
 
             'T'=> { col[0] = previous_x+1;
-                previous_x= previous_x+1;
+                previous_x += 1;
                 col[1]= previous_y;},
             
             'u'=> { col[0] = previous_x+1;
-                previous_x= previous_x+1;
+                previous_x +=1;
                 col[1]= previous_y;},
 
             'U'=> { col[0] = previous_x+1;
-                previous_x= previous_x+1;
+                previous_x += 1;
                 col[1]= previous_y;},
 
             _=> { col[0] = previous_x;
@@ -92,8 +92,8 @@ fn walk_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i64>, Dim<[usiz
 fn walk_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i64>, Dim<[usize; 2]>>) {
 
 
-    let mut previous_x= 0 as i64;
-    let mut previous_y= 0 as i64;
+    let mut previous_x= 0_i64;
+    let mut previous_y= 0_i64;
 
 
     let array_rev = array.axis_iter_mut(Axis(0)).rev();

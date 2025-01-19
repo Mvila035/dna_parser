@@ -1,6 +1,6 @@
 use numpy::ndarray::{ArrayBase, ViewRepr};
 use numpy::ndarray::{Axis, Dim};
-use numpy::{IntoPyArray, ToPyArray};
+use numpy::ToPyArray;
 use numpy::ndarray::Array1;
 use numpy::PyArray1;
 use pyo3::prelude::*;
@@ -8,7 +8,7 @@ use pyo3::types::PyList;
 use phf::phf_map;
 use std::thread;
 use crate::utils;
-use std::io::{self, Write};
+
 
 static POSITION_PROB: phf::Map<&'static str, [&'static f32; 10]> = phf_map! {
     "A"=> [&0.94, &0.68, &0.84, &0.93, &0.58, &0.68, &0.45, &0.34, &0.20, &0.22],
@@ -25,7 +25,7 @@ static POSITION_WEIGHT: phf::Map<&'static str, f32 >= phf_map! {
     "T"=> 0.33,
 };
 
-const POSITION_PARA: [&'static f32; 10] = [&1.9, &1.8, &1.7, &1.6, &1.5, &1.4, &1.3, &1.2, &1.1, &0.0];
+const POSITION_PARA: [&f32; 10] = [&1.9, &1.8, &1.7, &1.6, &1.5, &1.4, &1.3, &1.2, &1.1, &0.0];
 
 static CONTENT_PROB: phf::Map<&'static str, [&'static f32; 10]> = phf_map! {
     "A"=> [&0.28, &0.49, &0.44, &0.55, &0.62, &0.49, &0.67, &0.65, &0.81, &0.21],
@@ -41,7 +41,7 @@ static CONTENT_WEIGHT: phf::Map<&'static str, f32> = phf_map! {
     "T"=> 0.14,
 };
 
-const CONTENT_PARA: [&'static f32; 10] = [&0.33, &0.31, &0.29, &0.27, &0.25, &0.23, &0.21, &0.19, &0.17, &0.0];
+const CONTENT_PARA: [&f32; 10] = [&0.33, &0.31, &0.29, &0.27, &0.25, &0.23, &0.21, &0.19, &0.17, &0.0];
 
 fn nt_counts(sequence: &str, a: &mut[i32;3], c: &mut[i32;3],  g: &mut[i32;3], t: &mut[i32;3]) {
 

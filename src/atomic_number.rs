@@ -1,6 +1,6 @@
-use numpy::ndarray::{ArrayBase, AssignElem, ViewRepr};
+use numpy::ndarray::{ArrayBase,ViewRepr};
 use numpy::ndarray::{Axis, Dim};
-use numpy::{IntoPyArray, ToPyArray};
+use numpy::ToPyArray;
 use numpy::ndarray::Array2;
 use numpy::PyArray2;
 use pyo3::prelude::*;
@@ -13,7 +13,7 @@ use crate::utils;
 /// this function iterates on the sequence to encode it and pad/trim at the end of the sequence.
 pub fn atomic_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i8>, Dim<[usize; 1]>>){
     
-    for (mut col, charac) in array.iter_mut().zip(sequence.chars()){
+    for (col, charac) in array.iter_mut().zip(sequence.chars()){
 
         match charac {
 
@@ -40,7 +40,7 @@ pub fn atomic_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i8>, Dim<
 /// this function iterates backward on the sequence to encode it and to pad/trim at the beginning of the sequence
 pub fn atomic_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i8>, Dim<[usize; 1]>>) { 
 
-    for (mut col , charac) in  array.iter_mut().rev().zip( sequence.chars().rev() ) {
+    for (col , charac) in  array.iter_mut().rev().zip( sequence.chars().rev() ) {
 
 
         match charac {

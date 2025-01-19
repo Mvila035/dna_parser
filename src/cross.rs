@@ -1,6 +1,6 @@
 use numpy::ndarray::{ArrayBase, ArrayView,ViewRepr};
 use numpy::ndarray::{Array3,Axis, Dim};
-use numpy::{IntoPyArray, ToPyArray};
+use numpy::ToPyArray;
 use numpy::PyArray3;
 use pyo3::types::PyList;
 use pyo3::prelude::*;

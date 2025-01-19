@@ -42,24 +42,24 @@ fn chaos_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f64>, Dim<[usi
             col[0]= 0.5 * 1. + 0.5 * previous_x;
             col[1]= 0.5 * 1. + 0.5 * previous_y;
 
-            previous_x= col[0].clone();
-            previous_y= col[1].clone();
+            previous_x= col[0];
+            previous_y= col[1];
         }
 
         else if  nucleotide == 'c'{
             col[0]= 0.5 * -1. + 0.5 * previous_x;
             col[1]= 0.5 * -1. + 0.5 * previous_y;
 
-            previous_x= col[0].clone();
-            previous_y= col[1].clone();
+            previous_x= col[0];
+            previous_y= col[1];
         }
 
         else if nucleotide == 't' || nucleotide == 'u' {
             col[0]= 0.5 * -1. + 0.5 * previous_x;
             col[1]= 0.5 * 1. + 0.5 * previous_y;
 
-            previous_x= col[0].clone();
-            previous_y= col[1].clone();
+            previous_x= col[0];
+            previous_y= col[1];
             
         }
 
@@ -67,8 +67,8 @@ fn chaos_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f64>, Dim<[usi
             col[0]= 0.5 * 1. + 0.5 * previous_x;
             col[1]= 0.5 * -1. + 0.5 * previous_y;
 
-            previous_x= col[0].clone();
-            previous_y= col[1].clone();
+            previous_x= col[0];
+            previous_y= col[1];
             
         }
 
@@ -104,24 +104,24 @@ fn chaos_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f64>, Dim<[us
             col[0]= 0.5 * 1. + 0.5 * previous_x;
             col[1]= 0.5 * 1. + 0.5 * previous_y;
 
-            previous_x= col[0].clone();
-            previous_y= col[1].clone();
+            previous_x= col[0];
+            previous_y= col[1];
         }
 
         else if  nucleotide == 'c'{
             col[0]= 0.5 * -1. + 0.5 * previous_x;
             col[1]= 0.5 * -1. + 0.5 * previous_y;
 
-            previous_x= col[0].clone();
-            previous_y= col[1].clone();
+            previous_x= col[0];
+            previous_y= col[1];
         }
 
         else if nucleotide == 't' || nucleotide == 'u' {
             col[0]= 0.5 * -1. + 0.5 * previous_x;
             col[1]= 0.5 * 1. + 0.5 * previous_y;
 
-            previous_x= col[0].clone();
-            previous_y= col[1].clone();
+            previous_x= col[0];
+            previous_y= col[1];
             
         }
 
@@ -129,8 +129,8 @@ fn chaos_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f64>, Dim<[us
             col[0]= 0.5 * 1. + 0.5 * previous_x;
             col[1]= 0.5 * -1. + 0.5 * previous_y;
 
-            previous_x= col[0].clone();
-            previous_y= col[1].clone();
+            previous_x= col[0];
+            previous_y= col[1];
             
         }
 
