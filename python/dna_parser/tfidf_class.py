@@ -32,7 +32,7 @@ class Tfidf:
     
     
     def add_to_corpus(self, new_corpus):
-        self.corpus= self.corpus.extend(new_corpus)
+        self.corpus.extend(new_corpus)
         self.is_idf_uptodate= False
 
     def compute_idf(self, matrix):
