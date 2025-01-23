@@ -1,0 +1,17 @@
+site_name: dna-parser
+nav:
+  - Home: index.md
+  - Documentation: documentation.md
+  - About: about.md
+  - License: license.md
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+
+markdown_extensions:
+    - pymdownx.arithmatex
+
+theme: 
+  name: readthedocs
+
+
