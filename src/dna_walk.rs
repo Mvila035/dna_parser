@@ -249,7 +249,7 @@ pub fn dna_walk_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, PyList
 
     final_array= py.allow_threads(move || multithreads(sequences, pad_type, final_array, cpu_to_use));
 
-    final_array.to_pyarray_bound(py)
+    final_array.to_pyarray(py)
 
 
 }

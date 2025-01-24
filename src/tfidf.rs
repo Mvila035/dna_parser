@@ -86,9 +86,9 @@ pub fn transform_rust(py: Python, sequences: Vec<String>, vocabulary: HashMap<St
 
     };
 
-    ( PyArray1::from_vec_bound(py, val).into(),
-      PyArray1::from_vec_bound(py, row_indices).into(),
-      PyArray1::from_vec_bound(py, col_indices).into(),
+    ( PyArray1::from_vec(py, val).into(),
+      PyArray1::from_vec(py, row_indices).into(),
+      PyArray1::from_vec(py, col_indices).into(),
     )
     
 }
@@ -116,9 +116,9 @@ pub fn fit_transform_rust(py: Python, sequences: Vec<String>, kmer_size: usize, 
     };
 
     (vocabulary,
-      PyArray1::from_vec_bound(py, val).into(),
-      PyArray1::from_vec_bound(py, row_indices).into(),
-      PyArray1::from_vec_bound(py, col_indices).into(),
+      PyArray1::from_vec(py, val).into(),
+      PyArray1::from_vec(py, row_indices).into(),
+      PyArray1::from_vec(py, col_indices).into(),
     )
 
 }

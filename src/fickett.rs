@@ -204,6 +204,6 @@ pub fn fickett_score_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, P
     let cpu_to_use= utils::check_nb_cpus(n_jobs);
     final_array= py.allow_threads(move || multithreads(sequences, final_array, cpu_to_use));
 
-    final_array.to_pyarray_bound(py)
+    final_array.to_pyarray(py)
    
 }
