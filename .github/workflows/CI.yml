@@ -15,6 +15,7 @@ on:
   pull_request:
   workflow_dispatch:
 
+
 permissions:
   contents: read
 
@@ -41,13 +42,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: |
-            3.7
-            3.8
             3.9
             3.10
             3.11
             3.12
             3.13
+          exclude:
+            python-version: '3.13t'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -79,13 +80,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: |
-            3.7
-            3.8
             3.9
             3.10
             3.11
             3.12
             3.13
+          exclude:
+            python-version: '3.13t'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -113,13 +114,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: |
-            3.7
-            3.8
             3.9
             3.10
             3.11
             3.12
             3.13
+          exclude:
+            python-version: '3.13t'
           architecture: ${{ matrix.platform.target }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
@@ -147,13 +148,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: |
-            3.7
-            3.8
             3.9
             3.10
             3.11
             3.12
             3.13
+          exclude:
+            python-version: '3.13t'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -180,3 +181,5 @@ jobs:
         with:
           name: wheels-sdist
           path: dist
+
+ 
