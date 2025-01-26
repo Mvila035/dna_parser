@@ -1,86 +1,69 @@
-
-use numpy::ndarray::ArrayView;
-use numpy::ndarray::Array2;
-use numpy::IntoPyArray;
+use numpy::ndarray::{ArrayBase, ArrayView,ViewRepr};
+use numpy::ndarray::{Array3,Axis, Dim};
+use numpy::ToPyArray;
+use numpy::PyArray3;
 use pyo3::types::PyList;
 use pyo3::prelude::*;
 
-use std::sync::Mutex;
+
 use std::thread;
 use crate::utils;
-
 
 
 
 /// Returns an Array2<i8> which is the cross encoding representation of the genomic sequence
 ///
 /// this function iterates on the sequence to encode it.
-pub fn cross_after(sequence: &str, ncols: usize) -> Array2<i8>{
-
-    let mut vec= Array2::<i8>::zeros((ncols, 2));
+pub fn cross_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i8>, Dim<[usize; 2]>>) {
 
 
-    for (index,charac) in sequence.chars().enumerate() {
+    for (mut row,charac) in array.axis_iter_mut(Axis(0)).zip(sequence.chars()){
 
-        if index == ncols {
-            break
-        }
 
         match charac {
 
-            'A' => vec.row_mut(index).assign(&ArrayView::from(&[0,-1])),
-            'C' => vec.row_mut(index).assign(&ArrayView::from(&[-1,0])),
-            'G' => vec.row_mut(index).assign(&ArrayView::from(&[1,0])),
-            'T' => vec.row_mut(index).assign(&ArrayView::from(&[0,1])),
-            'U' => vec.row_mut(index).assign(&ArrayView::from(&[0,1])),
-            'a' => vec.row_mut(index).assign(&ArrayView::from(&[0,-1])),
-            'c' => vec.row_mut(index).assign(&ArrayView::from(&[-1,0])),
-            'g' => vec.row_mut(index).assign(&ArrayView::from(&[1,0])),
-            't' => vec.row_mut(index).assign(&ArrayView::from(&[0,1])),
-            'u' => vec.row_mut(index).assign(&ArrayView::from(&[0,1])),
-            _ => vec.row_mut(index).assign(&ArrayView::from(&[0,0])),
+            'A' => row.assign(&ArrayView::from(&[1,1])),
+            'G' => row.assign(&ArrayView::from(&[-1,1])),
+            'C' => row.assign(&ArrayView::from(&[-1,-1])),
+            'T' => row.assign(&ArrayView::from(&[1,-1])),
+            'U' => row.assign(&ArrayView::from(&[1,-1])),
+            'a' => row.assign(&ArrayView::from(&[1,1])),
+            'g' => row.assign(&ArrayView::from(&[-1,1])),
+            'c' => row.assign(&ArrayView::from(&[-1,-1])),
+            't' => row.assign(&ArrayView::from(&[1,-1])),
+            'u' => row.assign(&ArrayView::from(&[1,-1])),
+            _ => row.assign(&ArrayView::from(&[0,0])),
         }
     }
 
-    vec  
 }
 
 
 /// Returns an Array2<i8> which is the cross encoding representation of the genomic sequence
 ///
 /// this function iterates backward on the sequence to encode it and to pad/trim at the beginning of the sequence
-pub fn cross_before(sequence: &str, ncols: usize) -> Array2<i8>{
+pub fn cross_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i8>, Dim<[usize; 2]>>) {
 
-    let mut vec= Array2::<i8>::zeros((ncols, 2));
-
-
-    for (index , charac) in sequence.chars().rev().enumerate(){
-
-        if index == ncols {
-            break
-        }
-
-        //add value from the end of the vec
-        let vec_index= ncols-1-index;
+    for (mut row , charac) in  array.axis_iter_mut(Axis(0)).rev().zip( sequence.chars().rev() ){
 
         match charac {
 
-            'A' => vec.row_mut(vec_index).assign(&ArrayView::from(&[0,-1])),
-            'C' => vec.row_mut(vec_index).assign(&ArrayView::from(&[-1,0])),
-            'G' => vec.row_mut(vec_index).assign(&ArrayView::from(&[1,0])),
-            'T' => vec.row_mut(vec_index).assign(&ArrayView::from(&[0,1])),
-            'U' => vec.row_mut(vec_index).assign(&ArrayView::from(&[0,1])),
-            'a' => vec.row_mut(vec_index).assign(&ArrayView::from(&[0,-1])),
-            'c' => vec.row_mut(vec_index).assign(&ArrayView::from(&[-1,0])),
-            'g' => vec.row_mut(vec_index).assign(&ArrayView::from(&[1,0])),
-            't' => vec.row_mut(vec_index).assign(&ArrayView::from(&[0,1])),
-            'u' => vec.row_mut(vec_index).assign(&ArrayView::from(&[0,1])),
-            _ => vec.row_mut(vec_index).assign(&ArrayView::from(&[0,0])),
-        }            
-        
+            'A' => row.assign(&ArrayView::from(&[1,1])),
+            'G' => row.assign(&ArrayView::from(&[-1,1])),
+            'C' => row.assign(&ArrayView::from(&[-1,-1])),
+            'T' => row.assign(&ArrayView::from(&[1,-1])),
+            'U' => row.assign(&ArrayView::from(&[1,-1])),
+            'a' => row.assign(&ArrayView::from(&[1,1])),
+            'g' => row.assign(&ArrayView::from(&[-1,1])),
+            'c' => row.assign(&ArrayView::from(&[-1,-1])),
+            't' => row.assign(&ArrayView::from(&[1,-1])),
+            'u' => row.assign(&ArrayView::from(&[1,-1])),
+            _ => row.assign(&ArrayView::from(&[0,0])),
+
+            
+        }
     }
 
-    vec  
 }
 
 
@@ -88,53 +71,22 @@ pub fn cross_before(sequence: &str, ncols: usize) -> Array2<i8>{
 /// Returns the cross encodings in a Vec for the sequences passed to this fucntion.
 ///
 /// this function parse the type and length of padding for the encoding 
-fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Array2<i8>> {
+fn encode_chunks(chunk: &[String], mut array: ArrayBase<ViewRepr<&mut i8>, Dim<[usize; 3]>> , pad_type: &str ) {
 
-    
-    let mut encoded_sequences= Vec::new();
+    if pad_type== "after" {
 
-    if pad_type== "after" && vec_length > 0 {
+        for (seq, sub_array) in chunk.iter().zip(array.axis_iter_mut(Axis(0))) {
 
-        for seq in chunk {
-
-            let encoding= cross_after(seq, vec_length);
-            
-            encoded_sequences.push(encoding);
+            cross_after(seq, sub_array);
             
         }
     }
 
-    else if pad_type == "before" && vec_length > 0 {
+    else if pad_type == "before" {
         
-        for seq in chunk{
+        for (seq, sub_array) in chunk.iter().zip(array.axis_iter_mut(Axis(0))) {
 
-            let encoding= cross_before(seq, vec_length);
-            
-            encoded_sequences.push(encoding);
-            
-        }
-    }
-
-    else if pad_type== "after" && vec_length == 0 {
-
-        for seq in chunk.iter(){
-
-            let seq_len = seq.len();
-            let encoding= cross_after(seq, seq_len);
-            
-            encoded_sequences.push(encoding);
-            
-        }
-    }
-
-    else if pad_type== "before" && vec_length == 0 {
-
-        for seq in chunk.iter(){
-
-            let seq_len = seq.len();
-            let encoding= cross_before(seq, seq_len);
-            
-            encoded_sequences.push(encoding);
+           cross_before(seq, sub_array); 
             
         }
     }
@@ -145,33 +97,31 @@ fn encode_chunks(chunk: &[&str], pad_type: &str, vec_length: usize ) -> Vec<Arra
         panic!("The only 2 options for the type of padding are 'before' and 'after'.")
     }
 
-    encoded_sequences
+
 }
 
 /// Returns a Vec of tuples (usize, Vec<Array2<i8>>)
 ///
 /// This function splits the sequences to encode and distributes them to different threads. 
-/// the usize is used to keep the order of sequences and the Vec<Array2<i8>> represent the onehot encodings of the genomic sequences
-fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus: usize) -> Vec<(usize, Vec<Array2<i8>>)> {
+/// the usize is used to keep the order of sequences and the Vec<Array2<i8>> represent the cross encodings of the genomic sequences
+fn multithreads(sequences: Vec<String>, pad_type: &str, mut array: Array3<i8>, nb_cpus: usize) -> Array3<i8> {
 
     //determine size of chunks based on number of threads and add 1 to be sure 
     //to have a number of chunks equal to nb of cpus and not superior
     let seq_len= sequences.len();
     let slice_len= (seq_len/ nb_cpus) + 1;
 
-    let results= Mutex::new(Vec::new());
 
 // ####################################### begining of threads #####################################
     thread::scope(|s|{
 
-        let results= &results;
-        for (index,chunk) in sequences.chunks(slice_len).enumerate(){
+        
+        for (chunk_seq,array_slice ) in sequences.chunks(slice_len).zip(array.axis_chunks_iter_mut(Axis(0), slice_len)){
 
             s.spawn( move || {
                 
-                let vec_to_push= encode_chunks(chunk, pad_type, vec_length);
-                results.lock().unwrap().push((index, vec_to_push));
-
+                encode_chunks(chunk_seq, array_slice, pad_type );
+                
             });
 
         }
@@ -181,17 +131,12 @@ fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus
 
 // ####################################### end of threads #####################################
 
-
-    let mut result_vec= results.into_inner().unwrap();
-
-    result_vec.sort_by_key(|k| k.0);
-
-    result_vec
+    array
 
 }
 
 
-/// Returns a PyList of Numpy i8 2D array to Python
+/// Returns a 3D array to Python
 ///
 /// # Arguments
 /// * `py` - Python GIL token (used to acquire the GIL)
@@ -201,26 +146,21 @@ fn multithreads(sequences: Vec<&str>, pad_type: &str, vec_length: usize, nb_cpus
 /// * `n_jobs` - number of threads to use. 0 to use every cpu
 #[allow(unused_must_use)]
 #[pyfunction]
-pub fn cross_encoding_rust<'pyt>(py:  Python <'pyt>, sequences: Vec<&str>, pad_type: &str, pad_length: i128, n_jobs: i16 ) ->  &'pyt PyList{
+pub fn cross_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, PyList>, pad_type: &str, pad_length: i128, n_jobs: i16 ) ->  Bound<'pyt, PyArray3<i8>> {
 
+    let sequences: Vec<String> = sequences_py.extract().expect("Error unpacking Python object to Rust");
 
     let vec_length= utils::get_length(&sequences, pad_length);
     let cpu_to_use= utils::check_nb_cpus(n_jobs);
 
-    let py_list= PyList::empty(py);
+    let mut final_array= Array3::<i8>::zeros((sequences.len(), vec_length, 2));
 
-    let results=py.allow_threads(move || multithreads(sequences, pad_type, vec_length, cpu_to_use));
 
-  
-    for (_index, sequences ) in results {
+    final_array= py.allow_threads(move || multithreads(sequences, pad_type, final_array, cpu_to_use));
 
-        for seq in sequences {
+    final_array.to_pyarray(py)
 
-            py_list.append(seq.into_pyarray(py));
-        }
-    }
-    
-    
-    py_list
+
 }
+
 

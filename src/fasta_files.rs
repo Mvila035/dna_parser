@@ -10,7 +10,7 @@ use std::io::{prelude::*, BufReader};
 /// # Arguments
 /// * `file_path` - path to the fasta file
 #[pyfunction]
-pub fn seq_from_fasta(file_path: &str) ->  Vec<String> {
+pub fn seq_from_fasta_rust(file_path: &str) ->  Vec<String> {
    
     let f = File::open(file_path).expect("Unable to open file");
     let f = BufReader::new(f);
@@ -53,7 +53,7 @@ pub fn seq_from_fasta(file_path: &str) ->  Vec<String> {
 /// # Arguments
 /// * `file_path` - path to the fasta file
 #[pyfunction]
-pub fn metadata_from_fasta(file_path: &str) ->  Vec<String> {
+pub fn metadata_from_fasta_rust(file_path: &str) ->  Vec<String> {
 
     let f = File::open(file_path).expect("Unable to open file");
     let f = BufReader::new(f);
@@ -80,7 +80,7 @@ pub fn metadata_from_fasta(file_path: &str) ->  Vec<String> {
 /// # Arguments
 /// * `file_path` - path to the fasta files
 #[pyfunction]
-pub fn load_fasta(file_path: &str) ->  Vec<(String,String)>  {
+pub fn load_fasta_rust(file_path: &str) ->  Vec<(String,String)>  {
 
     let f = File::open(file_path).expect("Unable to open file");
     let reader = BufReader::new(f);
@@ -121,3 +121,6 @@ pub fn load_fasta(file_path: &str) ->  Vec<(String,String)>  {
 
 
 }
+
+// ################  test implementation generator load seq #############
+

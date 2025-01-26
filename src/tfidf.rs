@@ -1,117 +1,124 @@
-
-use numpy::ndarray::ArrayView;
-use numpy::ndarray::Array2;
-use numpy::{IntoPyArray, PyArray2};
+use numpy::array::PyArray1;
 use pyo3::prelude::*;
-use std::collections::HashMap;
-use std::collections::HashSet;
+use ahash::HashMap;
+use ahash::HashMapExt;
+use rayon::prelude::*;
+use crate::utils::*;
+use indexmap::IndexMap;
 
-// create a struct? To be completed...
+type CsrMatrix= (Py<PyArray1<usize>>, Py<PyArray1<usize>>, Py<PyArray1<usize>>);
+type VocabAndCsrMatrix= (HashMap<String,usize>,Py<PyArray1<usize>>, Py<PyArray1<usize>>, Py<PyArray1<usize>>);
 
-/// Returns a tuple containing the Hashmap mapping each word with the number of time it appears and a Vec
-/// with the order in which the words were encountered in the corpus. 
-fn map_vocabulary(corpus: &[String]) -> (HashMap<&str,f64>, Vec<&str>) {
+// transform a sequence into a vec of kmer 
+fn make_kmers(sequence: &str, kmer_size: usize) -> Vec<String> {
+    let mut kmers= Vec::new();
 
-    let mut map= HashMap::new();
-    let mut word_order= Vec::new();
-    let mut words_set= HashSet::new();
+    let chars: Vec<char>= sequence.chars().collect();
+    for kmer in chars.chunks(kmer_size) {
+        kmers.push(kmer.iter().collect::<String>().to_lowercase())
+    }
+    
+    kmers
+}
 
-    for seq in corpus.iter() {
+fn count_kmers(kmers: Vec<String>) -> IndexMap<String, usize> {
+    let mut count= IndexMap::new();
 
-        let mut current_words= HashSet::new();
+    for kmer in kmers{
+        *count.entry(kmer).or_insert(0) += 1;
+    }
+    count
+}
 
-        for word in seq.split_whitespace(){
-            
-            if !words_set.contains(word) {
-                word_order.push(word);
-                words_set.insert(word);
-            }
-            
-            if !current_words.contains(word){
-                map.entry(word).and_modify(|counter| *counter += 1.0).or_insert(1.0);
-                current_words.insert(word);
+fn get_counts(sequences: Vec<String>, kmer_size: usize, n_jobs:usize) -> Vec<IndexMap<String,usize>> {
+    
+    create_pool(n_jobs).expect("Error Building the threadpool.").install(|| {
+
+        sequences.par_iter()
+                .map(|sequence| count_kmers(make_kmers(sequence, kmer_size)))
+                .collect()
+   
+    })
+}
+
+fn map_vocabulary(sequence_counts: &Vec<IndexMap<String,usize>>) -> HashMap<String,usize> {
+    let mut vocabulary= HashMap::new();
+    let mut col_index= 0;
+
+    for sequence in sequence_counts {
+        for kmer in sequence.keys() {
+            if !vocabulary.contains_key(kmer) {
+                vocabulary.insert(kmer.clone(), col_index);
+                col_index +=1;
             }
         }
-
     }
-
-    (map,word_order)
+    vocabulary
 }
 
-/// Maps the number of time each word appears in the genomic sequence
-fn word_counts(sequence: &str) -> HashMap<&str,f64> {
 
-    let mut counts= HashMap::new();
-
-    for word in sequence.split_whitespace(){
-
-        counts.entry(word).and_modify(|counter| *counter += 1.0).or_insert(1.0);
-    }
-
-    counts
-}
-
-/// Returns a Vec of f64, representing the TF-IDF values of a sequences for each word that was mapped
-/// Computes the product of Term Frequency (TF) and Inverse Document Frequency (IDF) for every word in a sequence.
-fn compute_tfidf(length:f64, counts: HashMap<&str, f64>, map: &(HashMap<&str,f64>, Vec<&str>)) -> Vec<f64>{
-
-
-    let mut tfidf_vec= Vec::new();
-
-    for word in map.1.iter(){
-
-        //match to see if none in case a word isn't in a sequence
-        let tf= match counts.get(word){
-            Some(x) => x/length,
-            None => 0.0,
-        };
-        
-        //here use match in case we use the mapping of the corpus to transforme a sequence that is not 
-        //part of it.
-        //if a word of this seq not in corpus x= 0 (never appearred in corpus ) instead of None
-        let idf= match map.0.get(word){
-            Some(x) => (map.0.len() as f64/ (x+1.0)).ln(),
-            None=> (map.0.len() as f64).ln(),
-        };
-
-        let tfidf= tf*idf;
-
-        tfidf_vec.push(tfidf);
-
-    }
-
-    tfidf_vec
-}
-
-/// Returns a 2D Numpy array where each row is the encoding for one of the genomic sequences in the corpus
-///
-/// This function map the vocabulary (k-mers or words of length k) across all sequences. Then it encodes every sequence
-/// using the TF-IDF encoding
-///
-/// # Arguments
-/// * `length` - Length of the sequences to generate
-/// * `nb_of_seq` - number of sequences to generate and store in the Vec
-/// * `seq_type` - either "dna", "rna" or "aa" for amino acid
-/// * `n_jobs` - number of threads to use. 0 to use every cpu
 #[pyfunction]
-pub fn tfidf_encoding(py: Python, corpus: Vec<String>) -> &PyArray2<f64> {
+pub fn fit_rust(sequences: Vec<String>, kmer_size: usize, n_jobs: usize) -> HashMap<String,usize> {
+    
+    let sequences_counts= get_counts(sequences, kmer_size, n_jobs);
+    map_vocabulary(&sequences_counts)
+}
 
-    let word_map= map_vocabulary(&corpus);
-    let nrows= corpus.len();
-    let ncols= word_map.0.len();
+#[pyfunction]
+pub fn transform_rust(py: Python, sequences: Vec<String>, vocabulary: HashMap<String,usize>, kmer_size: usize, n_jobs: usize)
+ -> CsrMatrix {
 
-    let mut matrix =Array2::<f64>::zeros((nrows,ncols));
+    let mut val= Vec::new();
+    let mut row_indices= Vec::new();
+    let mut col_indices= Vec::new();
 
-    for elements in corpus.iter().zip(matrix.rows_mut()) {
-        let (seq, mut current_row)= elements;
-        let seq_len= seq.split_whitespace().count() as f64;
-        let counts= word_counts(seq);
+    let sequences_counts= get_counts(sequences, kmer_size, n_jobs);
 
-        let tfidf_vec= compute_tfidf(seq_len, counts, &word_map);
-        current_row.assign(&ArrayView::from(&tfidf_vec));
-        
-    }
-  
-    matrix.into_pyarray(py)
-     
+    for (row,sequence) in sequences_counts.iter().enumerate() {
+
+        for (kmer, count) in sequence.iter() {
+            if let Some(&col) = vocabulary.get(kmer) {
+                val.push(*count);
+                row_indices.push(row);
+                col_indices.push(col);
+            }
+        };
+
+    };
+
+    ( PyArray1::from_vec(py, val).into(),
+      PyArray1::from_vec(py, row_indices).into(),
+      PyArray1::from_vec(py, col_indices).into(),
+    )
+    
+}
+
+#[pyfunction]
+pub fn fit_transform_rust(py: Python, sequences: Vec<String>, kmer_size: usize, n_jobs: usize)-> VocabAndCsrMatrix {
+
+    let sequences_counts= get_counts(sequences, kmer_size, n_jobs);
+    let vocabulary= map_vocabulary(&sequences_counts);
+
+    let mut val= Vec::new();
+    let mut row_indices= Vec::new();
+    let mut col_indices= Vec::new();
+
+    for (row,sequence) in sequences_counts.iter().enumerate() {
+
+        for (kmer, count) in sequence.iter() {
+            if let Some(&col) = vocabulary.get(kmer) {
+                val.push(*count);
+                row_indices.push(row);
+                col_indices.push(col);
+            }
+        };
+
+    };
+
+    (vocabulary,
+      PyArray1::from_vec(py, val).into(),
+      PyArray1::from_vec(py, row_indices).into(),
+      PyArray1::from_vec(py, col_indices).into(),
+    )
+
 }

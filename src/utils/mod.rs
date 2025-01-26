@@ -1,6 +1,7 @@
 
 use num_cpus;
 use std::cmp::Ordering;
+use rayon::ThreadPoolBuildError;
 
 
 /// Returns a usize representing the length that the sequences should have after padding/trimming
@@ -8,7 +9,7 @@ use std::cmp::Ordering;
 ///
 /// if pad_length = -1 searches for the shortest sequence
 /// if pad_length = -2 searches for the longest sequence
-pub fn get_length(sequences: &[&str], pad_length: i128) -> usize {
+pub fn get_length(sequences: &[String], pad_length: i128) -> usize {
 
 
     let mut length= sequences[0].len();
@@ -79,3 +80,9 @@ pub fn check_nb_cpus(n_jobs: i16) -> usize {
     }
 
 }
+
+pub fn create_pool(num_threads: usize) -> Result<rayon::ThreadPool, ThreadPoolBuildError> {
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(num_threads)
+        .build()
+ }
