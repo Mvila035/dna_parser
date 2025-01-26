@@ -37,4 +37,4 @@ print(encodings)
 #  [1 0 0 0]
 #  [1 0 0 0]]]
 ```
-All encodings with examples are available in the [Documentation](Documentation.md) section.
+All encodings with examples are available in the [Documentation](https://mvila035.github.io/dna_parser/documentation/) section.
