@@ -65,3 +65,34 @@ def test_unexpected_char():
     for index, x in numpy.ndenumerate(test_matrix):
         
         assert x
+
+def test_window():
+    expected= numpy.array([ [0,0,2], [0,0,2], [1,-1,1]]) 
+    results= zcurve_encoding([DNA_SEQUENCES[1]], window= 2)[0]
+
+    test_matrix= results == expected
+
+    for index, x in numpy.ndenumerate(test_matrix):
+        
+        assert x
+
+def test_window():
+    expected= numpy.array([ [0,0,2], [0,0,2], [1,-1,1]]) 
+    results= zcurve_encoding([DNA_SEQUENCES[1]], window= 2)[0]
+
+    test_matrix= results == expected
+
+    for index, x in numpy.ndenumerate(test_matrix):
+        
+        assert x
+    
+def before_test_window():
+    expected= numpy.array([ [0,0,0],[0,0,0],[0,0,2], [0,0,2], [1,-1,1]]) 
+    results= zcurve_encoding([DNA_SEQUENCES[1]],pad_length=10, pad_type="before",window= 2)[0]
+
+    test_matrix= results == expected
+
+    for index, x in numpy.ndenumerate(test_matrix):
+        
+        assert x
+

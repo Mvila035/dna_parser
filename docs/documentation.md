@@ -486,7 +486,7 @@ print(encodings2)
 
 
 ```python
-dna_parser.zcurve_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1)
+dna_parser.zcurve_encoding(sequences, pad_type= "after", pad_length= -2, window= 1, n_jobs= 1)
 ```
 
 #### Function Arguments
@@ -494,11 +494,12 @@ dna_parser.zcurve_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs=
 * **sequences** (list of str): list of genomic sequences.
 * **pad_type** (str): pad (or trim) "before" or "after" the sequences.
 * **pad_length** (int): -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, any positive number for a fixed length.
+* **window** (int): non-overlapping window size to consider along the sequence for the encoding.
 * **n_jobs** (int): number of threads used to encode the sequences in parallel. 0 to use all CPUs available.
 
 #### Output
 
-**Numpy array with shape (number of sequences, length of sequences, 3).** <br /> The sequences are encoded within a cube. At each nucleotide position the Z-curve encoding gives the disparity between purines (r) and pyrimidines (y), the disparity between nucleotides with an amino (m) and a keto (k) group, and the disparity between nucleotide with weak (w) and strong (s) bonds.
+**Numpy array with shape (number of sequences, (length of sequences/window), 3).** <br /> The sequences are encoded within a cube. At each window position the Z-curve encoding gives the disparity between purines (r) and pyrimidines (y), the disparity between nucleotides with an amino (m) and a keto (k) group, and the disparity between nucleotide with weak (w) and strong (s) bonds.
 
 
 ```python
@@ -521,7 +522,21 @@ print(encoding.shape)
 #  [-1  3 -1]
 #  [-1  3 -1]]]
 #
-#(2, 3, 3)
+#(2, 4, 3)
+
+sequences= ["agtc","acc"]
+encoding= dps.zcurve_encoding(sequences, window=2)
+print(encoding)
+print(encoding.shape)
+
+#Output:
+#[[[ 2  0  0]
+#  [ 0  0  0]]
+#
+# [[ 0  2  0]
+#  [-1  3 -1]]]
+#(2, 2, 3)
+
 ```
 <br/>
 
