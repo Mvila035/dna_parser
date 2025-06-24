@@ -4,9 +4,9 @@ import numpy
 
 def test_load_fasta():
     
-    expected= [ (">sequence1", "acgtatgcgtcgtc"),
-    (">sequence2","cccgtga---gtcgat"),
-    (">sequence3","xgtcgycaaatcg-?")]
+    expected= [ ("sequence1", "acgtatgcgtcgtc"),
+    ("sequence2","cccgtga---gtcgat"),
+    ("sequence3","xgtcgycaaatcg-?")]
 
     results= load_fasta("tests/seq_test.fasta")
 
@@ -29,7 +29,7 @@ def test_seq_from_fasta():
 
 def test_seq_metadata_fasta():
 
-    expected= [">sequence1", ">sequence2", ">sequence3"]
+    expected= ["sequence1", "sequence2", "sequence3"]
 
     results= load_metadata("tests/seq_test.fasta")
 
@@ -38,8 +38,8 @@ def test_seq_metadata_fasta():
 def test_list_of_paths():
     paths= ["tests/seq_test.fasta","tests/seq_test.fasta","tests/seq_test.fasta"]
 
-    fasta_expected= [ (">sequence1", "acgtatgcgtcgtc"), (">sequence2","cccgtga---gtcgat"), (">sequence3","xgtcgycaaatcg-?")]*3
-    metadata_expected= [">sequence1", ">sequence2", ">sequence3"]*3
+    fasta_expected= [ ("sequence1", "acgtatgcgtcgtc"), ("sequence2","cccgtga---gtcgat"), ("sequence3","xgtcgycaaatcg-?")]*3
+    metadata_expected= ["sequence1", "sequence2", "sequence3"]*3
     sequences_expected= ["acgtatgcgtcgtc", "cccgtga---gtcgat", "xgtcgycaaatcg-?"]*3
     
     fasta= load_fasta(paths)

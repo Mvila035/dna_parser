@@ -1,4 +1,5 @@
 from .dna_parser import *
+from needletail import parse_fastx_file
 
 
 def onehot_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1):
@@ -44,30 +45,33 @@ def atomic_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1):
 def load_fasta(path):
 
     if type(path) is str:
-        return load_fasta_rust(path)
+        return [(seq.id, seq.seq) for seq in parse_fastx_file(path)]
     
     elif type(path) is list:
         
-        sequences= [ seq for current_file in path for seq in load_fasta_rust(current_file)]
+        sequences= [ (seq.id, seq.seq) for file in path for seq in parse_fastx_file(file) ]
         return sequences
+ 
 
 def load_metadata(path):
 
+    
     if type(path) is str:
-        return metadata_from_fasta_rust(path)
+        return [seq.id for seq in parse_fastx_file(path)]
     
     elif type(path) is list:
         
-        sequences= [ seq for current_file in path for seq in metadata_from_fasta_rust(current_file)]
+        sequences= [ seq.id for file in path for seq in parse_fastx_file(file)]
         return sequences
+    
 
         
 def load_sequences(path):
 
     if type(path) is str:
-        return seq_from_fasta_rust(path)
+        return [seq.seq for seq in parse_fastx_file(path)]
     
     elif type(path) is list:
         
-        sequences= [ seq for current_file in path for seq in seq_from_fasta_rust(current_file)]
+        sequences= [ seq.seq for file in path for seq in parse_fastx_file(file)]
         return sequences
