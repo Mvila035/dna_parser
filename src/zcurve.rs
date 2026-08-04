@@ -258,7 +258,7 @@ pub fn zcurve_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt,
     let mut final_array= Array3::<i64>::zeros((sequences.len(), vec_length, 3));
 
 
-    final_array= py.allow_threads(move || multithreads(sequences, pad_type, final_array, window, cpu_to_use));
+    final_array= py.detach(move || multithreads(sequences, pad_type, final_array, window, cpu_to_use));
 
     final_array.to_pyarray(py)
 

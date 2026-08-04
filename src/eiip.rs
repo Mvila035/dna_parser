@@ -155,7 +155,7 @@ pub fn eiip_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, P
     let mut final_array= Array2::<f64>::zeros((sequences.len(), vec_length));
 
 
-    final_array= py.allow_threads(move || multithreads(sequences, pad_type, final_array, cpu_to_use));
+    final_array= py.detach(move || multithreads(sequences, pad_type, final_array, cpu_to_use));
 
     final_array.to_pyarray(py)
    

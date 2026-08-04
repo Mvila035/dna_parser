@@ -237,7 +237,7 @@ pub fn chaos_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, 
     let mut final_array= Array3::<f64>::zeros((sequences.len(), vec_length, 2));
 
 
-    final_array= py.allow_threads(move || multithreads(sequences, pad_type, final_array, cpu_to_use));
+    final_array= py.detach(move || multithreads(sequences, pad_type, final_array, cpu_to_use));
 
     final_array.to_pyarray(py)
 

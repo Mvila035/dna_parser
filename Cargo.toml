@@ -1,6 +1,6 @@
 [package]
 name = "dna_parser"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -9,10 +9,10 @@ name = "dna_parser"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.23.4", features = ["extension-module"] }
+pyo3 = { version = "0.29", features = ["extension-module"] }
 rand= "0.8.5"
 itertools = "0.13.0"
-numpy = "0.23"
+numpy = "0.29"
 num_cpus = "1.15.0"
 ahash = "0.8.11"
 phf = { version = "0.11", features = ["macros"] }
