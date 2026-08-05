@@ -59,6 +59,7 @@ dependencies = [
  "ahash",
  "indexmap",
  "itertools",
+ "ndarray",
  "num_cpus",
  "numpy",
  "phf",
@@ -168,6 +169,7 @@ dependencies = [
  "portable-atomic",
  "portable-atomic-util",
  "rawpointer",
+ "rayon",
 ]
 
 [[package]]

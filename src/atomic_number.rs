@@ -1,162 +1,116 @@
-use numpy::ndarray::{ArrayBase,ViewRepr};
-use numpy::ndarray::{Axis, Dim};
-use numpy::ToPyArray;
-use numpy::ndarray::Array2;
-use numpy::PyArray2;
+use ndarray::ArrayViewMut1;
+use numpy::ndarray::{Array1, Array2, Axis};
+use numpy::IntoPyArray;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use std::thread;
+use rayon::prelude::*;
 use crate::utils;
 
-/// Returns an Array1<f64> which is the ordinal encoding representation of the genomic sequence
-///
-/// this function iterates on the sequence to encode it and pad/trim at the end of the sequence.
-pub fn atomic_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i8>, Dim<[usize; 1]>>){
+
+const ATOMIC_LUT: [i32; 256] = {
+    let mut t = [0; 256];
+    t[b'A' as usize] = 70;
+    t[b'a' as usize] = 70;
+    t[b'C' as usize] = 58;
+    t[b'c' as usize] = 58;
+    t[b'G' as usize] = 78;
+    t[b'g' as usize] = 78;
+    t[b'T' as usize] = 66;
+    t[b't' as usize] = 66;
+    t[b'U' as usize] = 66;
+    t[b'u' as usize] = 66;
+    t
+};
+
+fn atomic_after_fixed(sequence: &[u8], mut row: ArrayViewMut1<i32>)  {
+    for (col, &b) in row.iter_mut().zip(sequence.iter()) {
+        *col = ATOMIC_LUT[b as usize];
+    };
+}
+
+fn atomic_before_fixed(sequence: &[u8], mut row: ArrayViewMut1<i32>){
     
-    for (col, charac) in array.iter_mut().zip(sequence.chars()){
-
-        match charac {
-
-            'A' => *col = 70,
-            'C' => *col = 58,
-            'G' => *col = 78,
-            'T' => *col = 66,
-            'U' => *col = 66,
-            'a' => *col = 70,
-            'c' => *col = 58,
-            'g' => *col = 78,
-            't' => *col = 66,
-            'u' => *col = 66,
-            _ => *col = 0
-
-        }       
-    }
+    for (col, &b) in row.iter_mut().rev().zip(sequence.iter().rev()) {
+        *col = ATOMIC_LUT[b as usize];
+    };
 
 }
 
-
-/// Returns an Array1<f64> which is the ordinal encoding representation of the genomic sequence
-///
-/// this function iterates backward on the sequence to encode it and to pad/trim at the beginning of the sequence
-pub fn atomic_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut i8>, Dim<[usize; 1]>>) { 
-
-    for (col , charac) in  array.iter_mut().rev().zip( sequence.chars().rev() ) {
-
-
-        match charac {
-
-            'A' => *col = 70,
-            'C' => *col = 58,
-            'G' => *col = 78,
-            'T' => *col = 66,
-            'U' => *col = 66,
-            'a' => *col = 70,
-            'c' => *col = 58,
-            'g' => *col = 78,
-            't' => *col = 66,
-            'u' => *col = 66,
-            _ => *col = 0
-
-        }       
-    }
-
-
+fn atomic_no_pad(sequence: &[u8]) -> Array1<i32> {
+    sequence.iter().map(|&b| ATOMIC_LUT[b as usize]).collect()
 }
 
-
-
-/// Returns the ordinal encodings in a Vec for the sequences passed to this fucntion.
-///
-/// this function parse the type and length of padding for the encoding
-fn encode_chunks(chunk: &[String], mut array: ArrayBase<ViewRepr<&mut i8>, Dim<[usize; 2]>> , pad_type: &str ) {
-
-
-    if pad_type== "after" {
-
-        for (seq, sub_array) in chunk.iter().zip(array.axis_iter_mut(Axis(0))) {
-
-            atomic_after(seq, sub_array);
-            
-        }
-    }
-
-    else if pad_type == "before" {
-        
-        for (seq, sub_array) in chunk.iter().zip(array.axis_iter_mut(Axis(0))) {
-
-            atomic_before(seq, sub_array); 
-            
-        }
-    }
-
-
-
-    else {
-
-        panic!("The only 2 options for the type of padding are 'before' and 'after'.")
-    }
-
-
-}
-
-
-/// Returns a Vec of tuples (usize, Vec<Array1<f64>>)
-///
-/// This function splits the sequences to encode and distributes them to different threads. 
-/// the usize is used to keep the order of sequences and the Vec<Array2<i8>> represent the ordinal encodings of the genomic sequences
-fn multithreads(sequences: Vec<String>, pad_type: &str, mut array: Array2<i8>, nb_cpus: usize) -> Array2<i8> {
-
-
-    //determine size of chunks based on number of threads and add 1 to be sure 
-    //to have a number of chunks egal to nb of cpus and not superior
-    let seq_len= sequences.len();
-    let slice_len= (seq_len/ nb_cpus) + 1;
-
+/// Encodes all sequences in parallel into a rectangular `Array2<f64>`
+/// of the given `length`.
+fn encode_parallel(
+    sequences: &[Vec<u8>],
+    pad_type: &str,
+    length: usize,
+    pool: &rayon::ThreadPool,
+) -> Array2<i32> {
+    let mut final_array= Array2::<i32>::zeros((sequences.len(), length));
+    pool.install(|| {
+        sequences
+            .par_iter()
+            .zip(final_array.axis_iter_mut(Axis(0)).into_par_iter())
+            .for_each(|(seq,  row)| match pad_type {
+                "after" => atomic_after_fixed(seq, row),
+                "before" => atomic_before_fixed(seq, row),
+                _ => panic!("The only 2 options for the type of padding are 'before' and 'after'."),
     
-    thread::scope(|s|{
-
-        
-        for (chunk_seq,array_slice ) in sequences.chunks(slice_len).zip(array.axis_chunks_iter_mut(Axis(0), slice_len)){
-
-            s.spawn( move || {
-                
-                encode_chunks(chunk_seq, array_slice, pad_type );
-                
-            });
-
-        }
-
+                })
     });
 
-// ####################################### end of threads #####################################
-
-    array
-
+    final_array
 }
 
+/// Encodes all sequences in parallel with no padding/trimming: each keeps
+/// its own length. Order is preserved guaranteed by rayon .collect()
+fn encode_parallel_no_pad(sequences: &[Vec<u8>], pool: &rayon::ThreadPool) -> Vec<Array1<i32>> {
+    pool.install(|| sequences.par_iter().map(|seq| atomic_no_pad(seq)).collect())
+}
 
-/// Returns a PyList of Numpy f64 1D array to Python
+/// Returns a Numpy i32 2D array, or -- when `pad_length == 0` -- a Python
+/// `list` of 1D Numpy i32 arrays, one per sequence, unpadded/untrimmed.
 ///
 /// # Arguments
-/// * `py` - Python GIL token (used to acquire the GIL)
-/// * `sequences` - Vec of &str representing the sequences to encode
-/// * `pad_type` - &str indicating to padd (or trim) "before" or "after" the sequences
-/// * `pad_length` - -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
-/// * `n_jobs` - number of threads to use. 0 to use every cpu
-#[allow(unused_must_use)]
+/// * `py` - Python GIL token
+/// * `sequences_py` - list of sequences: `str`, `bytes`/`bytearray`, or any
+///   object exposing a `.seq` attribute (e.g. a needletail `SequenceRecord`)
+/// * `pad_type` - "before" or "after" (ignored when `pad_length == 0`)
+/// * `pad_length` - -2 pad to longest, -1 trim to shortest, 0 = no padding
+///   (returns a `list` of ragged 1D arrays), any positive number for a
+///   fixed length.
+/// * `n_jobs` - number of threads to use, 0 to use every cpu
 #[pyfunction]
-pub fn atomic_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, PyList>, pad_type: &str, pad_length: i128, n_jobs: i16 ) -> Bound<'pyt, PyArray2<i8>> {
+pub fn atomic_encoding_rust<'pyt>(
+    py: Python<'pyt>,
+    sequences_py: &Bound<'pyt, PyList>,
+    pad_type: &str,
+    pad_length: i128,
+    n_jobs: i16,
+) -> PyResult<Py<PyAny>> {
+    let sequences = utils::extract_all_sequences(sequences_py)?;
+    let cpu_to_use = utils::check_nb_cpus(n_jobs);
+
     
-    let sequences: Vec<String> = sequences_py.extract().expect("Error unpacking Python object to Rust");
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(cpu_to_use)
+        .build()
+        .expect("Failed to build rayon thread pool");
 
-    let vec_length= utils::get_length(&sequences, pad_length);
-    let cpu_to_use= utils::check_nb_cpus(n_jobs);
+    if pad_length == 0 {
+        let results = py.detach(|| encode_parallel_no_pad(&sequences, &pool));
+        let py_list = PyList::empty(py);
+        for arr in results {
+            py_list.append(arr.into_pyarray(py))?;
+        }
+        return Ok(py_list.unbind().into());
+    }
 
-    let mut final_array= Array2::<i8>::zeros((sequences.len(), vec_length));
+    let vec_length = utils::get_length_vec(&sequences, pad_length);
+    let final_array =
+        py.detach(|| encode_parallel(&sequences, pad_type, vec_length, &pool));
 
-
-    final_array= py.detach(move || multithreads(sequences, pad_type, final_array, cpu_to_use));
-
-    final_array.to_pyarray(py)
-   
+    Ok(final_array.into_pyarray(py).unbind().into())
 }

@@ -2,7 +2,92 @@
 use num_cpus;
 use std::cmp::Ordering;
 use rayon::ThreadPoolBuildError;
+use pyo3::prelude::*;
+use pyo3::types::{PyBytes, PyList, PyString};
+use pyo3::exceptions::PyTypeError;
+ 
 
+pub fn extract_seq_bytes(obj: &Bound<PyAny>) -> PyResult<Vec<u8>> {
+    if let Ok(s) = obj.cast::<PyString>() {
+        return Ok(s.to_string().into_bytes());
+    }
+    if let Ok(b) = obj.cast::<PyBytes>() {
+        return Ok(b.as_bytes().to_vec());
+    }
+    if let Ok(seq_attr) = obj.getattr("seq") {
+        return extract_seq_bytes(&seq_attr);
+    }
+    Err(PyTypeError::new_err(
+        "Each sequence must be a str, bytes/bytearray, or an object with a \
+         `.seq` attribute (e.g. a needletail SequenceRecord).",
+    ))
+}
+ 
+/// Extracts a whole `PyList` of mixed str/bytes/needletail-record entries
+/// into `Vec<Vec<u8>>`, ready for byte-LUT encoding.
+pub fn extract_all_sequences(sequences_py: &Bound<PyList>) -> PyResult<Vec<Vec<u8>>> {
+    sequences_py
+        .iter()
+        .map(|item| extract_seq_bytes(&item))
+        .collect()
+}
+
+pub fn get_length_vec(sequences: &Vec<Vec<u8>>, pad_length: i128) -> usize {
+
+
+    let mut length= sequences[0].len();
+
+
+    if pad_length < -2 {
+
+        panic!("Invalid padding length. Here are the available options:
+         -2 to pad to longest sequence; 
+         -1 to pad to the shortest sequence;
+          0 for no padding;
+          any positive number to choose the maximum length you want your sequences to be.");
+        
+    }
+
+    else if pad_length == 0 {
+
+        length= 0;
+    }
+    
+
+    //padd to shortest
+    else if pad_length == -1 {
+
+        for seq in sequences.iter() {
+
+            if seq.len() < length {
+            
+            length = seq.len();
+
+            }
+        }
+    }
+
+    //pad to longest
+    else if pad_length == -2 {
+
+        for seq in sequences.iter() {
+
+            if seq.len() > length {
+            
+                length = seq.len();
+
+            }
+        }   
+    }
+
+
+    else {
+
+        length= pad_length as usize;
+    }
+
+    length
+}
 
 /// Returns a usize representing the length that the sequences should have after padding/trimming
 /// or 0 for no padding/trimming
