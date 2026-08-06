@@ -1,12 +1,11 @@
 use numpy::ndarray::{ArrayBase, ViewRepr};
 use numpy::ndarray::{Axis, Dim};
-use numpy::ToPyArray;
 use numpy::ndarray::Array1;
-use numpy::PyArray1;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
+use numpy::IntoPyArray;
 use phf::phf_map;
-use std::thread;
+use rayon::prelude::*;
 use crate::utils;
 
 
@@ -43,11 +42,11 @@ static CONTENT_WEIGHT: phf::Map<&'static str, f32> = phf_map! {
 
 const CONTENT_PARA: [&f32; 10] = [&0.33, &0.31, &0.29, &0.27, &0.25, &0.23, &0.21, &0.19, &0.17, &0.0];
 
-fn nt_counts(sequence: &str, a: &mut[i32;3], c: &mut[i32;3],  g: &mut[i32;3], t: &mut[i32;3]) {
+fn nt_counts(sequence: &[u8], a: &mut[i32;3], c: &mut[i32;3],  g: &mut[i32;3], t: &mut[i32;3]) {
 
     let mut position= 0;
 
-    for nt in sequence.chars() {
+    for nt in sequence {
 
         if position > 2 {
             position= 0;
@@ -55,16 +54,16 @@ fn nt_counts(sequence: &str, a: &mut[i32;3], c: &mut[i32;3],  g: &mut[i32;3], t:
     
 
         match nt {
-            'A' => a[position] += 1,
-            'C' => c[position] += 1,
-            'G' => g[position] += 1,
-            'T' => t[position] += 1,
-            'U' => t[position] += 1,
-            'a' => a[position] += 1,
-            'c' => c[position] += 1,
-            'g' => g[position] += 1,
-            't' => t[position] += 1,
-            'u' => t[position] += 1,
+            b'A' => a[position] += 1,
+            b'C' => c[position] += 1,
+            b'G' => g[position] += 1,
+            b'T' => t[position] += 1,
+            b'U' => t[position] += 1,
+            b'a' => a[position] += 1,
+            b'c' => c[position] += 1,
+            b'g' => g[position] += 1,
+            b't' => t[position] += 1,
+            b'u' => t[position] += 1,
             _=> {}
         }
         
@@ -105,7 +104,7 @@ fn get_content_prob(nt_value: f32, nt_type: &str) -> f32 {
 
 
 
-fn fickett_score(sequence: &str, mut score: ArrayBase<ViewRepr<&mut f32>, Dim<[usize; 0]>>){
+fn fickett_score(sequence: &[u8], mut score: ArrayBase<ViewRepr<&mut f32>, Dim<[usize; 0]>>){
     
     let seq_len= sequence.len();
     let mut a_counts= [0,0,0];
@@ -149,61 +148,43 @@ fn fickett_score(sequence: &str, mut score: ArrayBase<ViewRepr<&mut f32>, Dim<[u
 
 }
 
-fn encode_chunks(chunk: &[String], mut array: ArrayBase<ViewRepr<&mut f32>, Dim<[usize; 1]>> ) {
-
-    for (seq, sub_array) in chunk.iter().zip(array.axis_iter_mut(Axis(0))) {
-
-        fickett_score(seq, sub_array);
-        
-    }
-
-
-}
 
 
 
-fn multithreads(sequences: Vec<String>, mut array: Array1<f32>, nb_cpus: usize) -> Array1<f32> {
-
-
-    //determine size of chunks based on number of threads and add 1 to be sure 
-    //to have a number of chunks egal to nb of cpus and not superior
-    let seq_len= sequences.len();
-    let slice_len= (seq_len/ nb_cpus) + 1;
-
-    
-    thread::scope(|s|{
-
-        
-        for (chunk_seq,array_slice ) in sequences.chunks(slice_len).zip(array.axis_chunks_iter_mut(Axis(0), slice_len)){
-
-            s.spawn( move || {
-                
-                encode_chunks(chunk_seq, array_slice);
-                
-            });
-
-        }
-
+fn encode_parallel(
+    sequences: &[Vec<u8>],
+    pool: &rayon::ThreadPool,
+) -> Array1<f32> {
+    let mut final_array= Array1::<f32>::zeros(sequences.len());
+    pool.install(|| {
+        sequences
+            .par_iter()
+            .zip(final_array.axis_iter_mut(Axis(0)).into_par_iter())
+            .for_each(|(seq,  cell)| {fickett_score(seq, cell);})
     });
 
-// ####################################### end of threads #####################################
-
-    array
-
+    final_array
 }
 
 
 
-#[allow(unused_must_use)]
 #[pyfunction]
-pub fn fickett_score_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, PyList>, n_jobs: i16 ) -> Bound<'pyt, PyArray1<f32>> {
+pub fn fickett_score_rust<'pyt>(
+    py: Python<'pyt>,
+    sequences_py: &Bound<'pyt, PyList>,
+    n_jobs: i16,
+) -> PyResult<Py<PyAny>> {
+    let sequences = utils::extract_all_sequences(sequences_py)?;
+    let cpu_to_use = utils::check_nb_cpus(n_jobs);
+
     
-    let sequences: Vec<String> = sequences_py.extract().expect("Error unpacking Python object to Rust");
-    let mut final_array= Array1::<f32>::zeros(sequences.len());
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(cpu_to_use)
+        .build()
+        .expect("Failed to build rayon thread pool");
 
-    let cpu_to_use= utils::check_nb_cpus(n_jobs);
-    final_array= py.detach(move || multithreads(sequences, final_array, cpu_to_use));
+    let final_array =
+        py.detach(|| encode_parallel(&sequences, &pool));
 
-    final_array.to_pyarray(py)
-   
+    Ok(final_array.into_pyarray(py).unbind().into())
 }
