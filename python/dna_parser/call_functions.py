@@ -42,6 +42,10 @@ def atomic_encoding(sequences, pad_type= "after", pad_length= -2, n_jobs= 1):
 
     return atomic_encoding_rust(sequences, pad_type, pad_length, n_jobs)
 
+def make_kmers(sequences, window_size= 3, stride= 3, drop_remainder= False, n_jobs= 1):
+
+    return make_kmers_rust(sequences, window_size, stride, drop_remainder, n_jobs)
+
 def load_fasta(path):
 
     if type(path) is str:

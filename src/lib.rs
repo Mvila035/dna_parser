@@ -42,7 +42,8 @@ use atomic_number::*;
 fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
 
     m.add_function(wrap_pyfunction!(onehot_encoding_rust,m)?)?;
-    m.add_function(wrap_pyfunction!(make_kmers,m)?)?;
+    m.add_function(wrap_pyfunction!(make_kmers_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(insert_white_spaces,m)?)?;
     m.add_function(wrap_pyfunction!(random_seq_rust,m)?)?;
     m.add_function(wrap_pyfunction!(real_encoding_rust,m)?)?;
     m.add_function(wrap_pyfunction!(cross_encoding_rust,m)?)?;
