@@ -1,4 +1,4 @@
-use ndarray::{array, ArrayViewMut2};
+use ndarray::{aview1, ArrayViewMut2};
 use numpy::ndarray::{Array3, Array2, Axis};
 use numpy::IntoPyArray;
 use pyo3::prelude::*;
@@ -27,14 +27,14 @@ const ONEHOT_LUT: [[i32;4]; 256] = {
 
 fn onehot_after_fixed(sequence: &[u8], mut row: ArrayViewMut2<i32>)  {
     for (mut cols, &b) in row.outer_iter_mut().zip(sequence.iter()) {
-        cols.assign( &array!(ONEHOT_LUT[b as usize]));
+        cols.assign( &aview1(&ONEHOT_LUT[b as usize]));
     };
 }
 
 fn onehot_before_fixed(sequence: &[u8], mut row: ArrayViewMut2<i32>){
     
     for (mut cols, &b) in row.outer_iter_mut().rev().zip(sequence.iter().rev()) {
-        cols.assign( &array!(ONEHOT_LUT[b as usize]));
+        cols.assign( &aview1(&ONEHOT_LUT[b as usize]));
     };
 
 }
@@ -42,7 +42,7 @@ fn onehot_before_fixed(sequence: &[u8], mut row: ArrayViewMut2<i32>){
 fn onehot_no_pad(sequence: &[u8]) -> Array2<i32> {
     let mut seq_array= Array2::<i32>::zeros((sequence.len(), 2));
     for (mut cols, &b) in seq_array.outer_iter_mut().zip(sequence.iter()) {
-        cols.assign( &array!(ONEHOT_LUT[b as usize]));
+        cols.assign( &aview1(&ONEHOT_LUT[b as usize]));
     };
     seq_array
 }
@@ -55,7 +55,7 @@ fn encode_parallel(
     length: usize,
     pool: &rayon::ThreadPool,
 ) -> Array3<i32> {
-    let mut final_array= Array3::<i32>::zeros((sequences.len(), length, 2));
+    let mut final_array= Array3::<i32>::zeros((sequences.len(), length, 4));
     pool.install(|| {
         sequences
             .par_iter()

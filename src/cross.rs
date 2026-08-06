@@ -1,4 +1,4 @@
-use ndarray::{array, ArrayViewMut2};
+use ndarray::{ArrayViewMut2, aview1};
 use numpy::ndarray::{Array3, Array2, Axis};
 use numpy::IntoPyArray;
 use pyo3::prelude::*;
@@ -24,14 +24,14 @@ const CROSS_LUT: [[i32;2]; 256] = {
 
 fn cross_after_fixed(sequence: &[u8], mut row: ArrayViewMut2<i32>)  {
     for (mut cols, &b) in row.outer_iter_mut().zip(sequence.iter()) {
-        cols.assign( &array!(CROSS_LUT[b as usize]));
+        cols.assign( &aview1(&CROSS_LUT[b as usize]));
     };
 }
 
 fn cross_before_fixed(sequence: &[u8], mut row: ArrayViewMut2<i32>){
     
     for (mut cols, &b) in row.outer_iter_mut().rev().zip(sequence.iter().rev()) {
-        cols.assign( &array!(CROSS_LUT[b as usize]));
+        cols.assign( &aview1(&CROSS_LUT[b as usize]));
     };
 
 }
@@ -39,7 +39,7 @@ fn cross_before_fixed(sequence: &[u8], mut row: ArrayViewMut2<i32>){
 fn cross_no_pad(sequence: &[u8]) -> Array2<i32> {
     let mut seq_array= Array2::<i32>::zeros((sequence.len(), 2));
     for (mut cols, &b) in seq_array.outer_iter_mut().zip(sequence.iter()) {
-        cols.assign( &array!(CROSS_LUT[b as usize]));
+        cols.assign( &aview1(&CROSS_LUT[b as usize]));
     };
     seq_array
 }
