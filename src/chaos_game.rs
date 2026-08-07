@@ -1,223 +1,127 @@
-use numpy::ndarray::{ArrayBase, ViewRepr};
-use numpy::ndarray::{Array3,Axis, Dim};
-use numpy::ToPyArray;
-use numpy::PyArray3;
-use pyo3::types::PyList;
+use ndarray::ArrayViewMut2;
+use numpy::ndarray::{Array3, Array2, Axis};
+use numpy::IntoPyArray;
 use pyo3::prelude::*;
-use itertools::Itertools;
-
-
-use std::thread;
+use pyo3::types::PyList;
+use rayon::prelude::*;
 use crate::utils;
 
+#[inline]
+fn step(nucleotide: u8, x: &mut f32, y: &mut f32){
 
-
-fn chaos_after(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f64>, Dim<[usize; 2]>>) {
-
-
-    let mut previous_x= 0 as f64;
-    let mut previous_y= 0 as f64;
-
-    for item in array.axis_iter_mut(Axis(0)).zip_longest(sequence.chars()) {
-
-        let nucleotide: char;
-        let mut col: ArrayBase<ViewRepr<&mut f64>, Dim<[usize; 1]>>;
-
-        if item.is_both() {
-            let (option_col,char) = item.left_and_right();
-            col= option_col.unwrap();
-            nucleotide= char.unwrap().to_ascii_lowercase();
+    if nucleotide == b'a' || nucleotide == b'A' {
+            *x= 0.5 * 1. + 0.5 * (*x);
+            *y= 0.5 * 1. + 0.5 * (*y);
         }
 
-        else if !item.is_left() {
-            break
+    else if  nucleotide == b'c' || nucleotide == b'C' {
+            *x= 0.5 * -1. + 0.5 * (*x);
+            *y= 0.5 * -1. + 0.5 * (*y);
         }
 
-        else {
-            col= item.left().unwrap();
-            nucleotide= ' ';
-        }
-        
-        if nucleotide == 'a' {
-            col[0]= 0.5 * 1. + 0.5 * previous_x;
-            col[1]= 0.5 * 1. + 0.5 * previous_y;
-
-            previous_x= col[0];
-            previous_y= col[1];
-        }
-
-        else if  nucleotide == 'c'{
-            col[0]= 0.5 * -1. + 0.5 * previous_x;
-            col[1]= 0.5 * -1. + 0.5 * previous_y;
-
-            previous_x= col[0];
-            previous_y= col[1];
-        }
-
-        else if nucleotide == 't' || nucleotide == 'u' {
-            col[0]= 0.5 * -1. + 0.5 * previous_x;
-            col[1]= 0.5 * 1. + 0.5 * previous_y;
-
-            previous_x= col[0];
-            previous_y= col[1];
+    else if nucleotide == b't' || nucleotide == b'u' ||
+                nucleotide == b'T' || nucleotide == b'U'{
+            *x= 0.5 * -1. + 0.5 * (*x);
+            *y= 0.5 * 1. + 0.5 * (*y);
             
         }
 
-        else if nucleotide == 'g' {
-            col[0]= 0.5 * 1. + 0.5 * previous_x;
-            col[1]= 0.5 * -1. + 0.5 * previous_y;
-
-            previous_x= col[0];
-            previous_y= col[1];
-            
+    else if nucleotide == b'g' || nucleotide == b'G'{
+            *x= 0.5 * 1. + 0.5 * (*x);
+            *y= 0.5 * -1. + 0.5 * (*y);
         }
 
-        else {
-            col[0]= previous_x;
-            col[1]= previous_y;
-        }
-
-
-    }
-
-
-
+    
 }
 
-fn chaos_before(sequence: &str, mut array: ArrayBase<ViewRepr<&mut f64>, Dim<[usize; 2]>>) {
+fn chaos_after_fixed(sequence: &[u8], mut array: ArrayViewMut2<f32>) {
 
+    let mut x= 0 as f32;
+    let mut y= 0 as f32;
 
-    let mut previous_x= 0 as f64;
-    let mut previous_y= 0 as f64;
+    let mut rows=  array.outer_iter_mut();
+    for (&nucleotide, mut cols ) in sequence.iter().zip(&mut rows) {
 
-
-    let array_rev = array.axis_iter_mut(Axis(0)).rev();
-    let sequence_rev: Vec<char>= sequence.chars().rev().collect();
-
-    let zip_tup= array_rev.zip(sequence_rev).rev();
-
-    for (mut col, charac) in zip_tup {
-
-        let nucleotide= charac.to_ascii_lowercase();
-        
-        if nucleotide == 'a' {
-            col[0]= 0.5 * 1. + 0.5 * previous_x;
-            col[1]= 0.5 * 1. + 0.5 * previous_y;
-
-            previous_x= col[0];
-            previous_y= col[1];
-        }
-
-        else if  nucleotide == 'c'{
-            col[0]= 0.5 * -1. + 0.5 * previous_x;
-            col[1]= 0.5 * -1. + 0.5 * previous_y;
-
-            previous_x= col[0];
-            previous_y= col[1];
-        }
-
-        else if nucleotide == 't' || nucleotide == 'u' {
-            col[0]= 0.5 * -1. + 0.5 * previous_x;
-            col[1]= 0.5 * 1. + 0.5 * previous_y;
-
-            previous_x= col[0];
-            previous_y= col[1];
-            
-        }
-
-        else if nucleotide == 'g' {
-            col[0]= 0.5 * 1. + 0.5 * previous_x;
-            col[1]= 0.5 * -1. + 0.5 * previous_y;
-
-            previous_x= col[0];
-            previous_y= col[1];
-            
-        }
-
-        else {
-            col[0]= previous_x;
-            col[1]= previous_y;
-        }
+        step(nucleotide, &mut x, &mut y);
+        cols[0]= x;
+        cols[1]= y;
 
     }
-
+    
+    for mut cols in rows {
+        cols[0] = x;
+        cols[1] = y;
+    }
 }
 
 
 
+fn chaos_before_fixed(sequence: &[u8], mut array: ArrayViewMut2<f32>) {
 
 
-/// Returns the onehot encodings in a Vec for the sequences passed to this fucntion.
-///
-/// this function parse the type and length of padding for the encoding 
-fn encode_chunks(chunk: &[String], mut array: ArrayBase<ViewRepr<&mut f64>, Dim<[usize; 3]>> , pad_type: &str ) {
+    let mut x= 0 as f32;
+    let mut y= 0 as f32;
 
+    let mut rows=  array.outer_iter_mut();
+    for (mut cols, &nucleotide) in (&mut rows).rev().zip(sequence.iter().rev()).rev() {
 
-    if pad_type== "after" {
+        step(nucleotide, &mut x, &mut y);
+        cols[0]= x;
+        cols[1]= y;
 
-        for (seq, sub_array) in chunk.iter().zip(array.axis_iter_mut(Axis(0))) {
-
-            chaos_after(seq, sub_array);
-            
-        }
     }
-
-    else if pad_type == "before" {
-        
-        for (seq, sub_array) in chunk.iter().zip(array.axis_iter_mut(Axis(0))) {
-
-            chaos_before(seq, sub_array); 
-            
-        }
-    }
-
-
-
-    else {
-
-        panic!("The only 2 options for the type of padding are 'before' and 'after'.")
-    }
-
-
 }
 
-/// Returns a Vec of tuples (usize, Vec<Array2<i8>>)
-///
-/// This function splits the sequences to encode and distributes them to different threads. 
-/// the usize is used to keep the order of sequences and the Vec<Array2<i8>> represent the onehot encodings of the genomic sequences
-fn multithreads(sequences: Vec<String>, pad_type: &str, mut array: Array3<f64>, nb_cpus: usize) -> Array3<f64> {
 
-    //determine size of chunks based on number of threads and add 1 to be sure 
-    //to have a number of chunks equal to nb of cpus and not superior
-    let seq_len= sequences.len();
-    let slice_len= (seq_len/ nb_cpus) + 1;
+fn chaos_no_pad(sequence: &[u8], ) -> Array2<f32> {
+
+    let mut array= Array2::<f32>::zeros((sequence.len(),2));
+    let mut x= 0 as f32;
+    let mut y= 0 as f32;
+
+    let mut rows=  array.outer_iter_mut();
+    for (mut cols, &nucleotide) in (&mut rows).zip(sequence.iter()) {
+
+        step(nucleotide, &mut x, &mut y);
+        cols[0]= x;
+        cols[1]= y;
+
+    }
+    array   
+}
 
 
-// ####################################### begining of threads #####################################
-    thread::scope(|s|{
 
-        
-        for (chunk_seq,array_slice ) in sequences.chunks(slice_len).zip(array.axis_chunks_iter_mut(Axis(0), slice_len)){
-
-            s.spawn( move || {
-                
-                encode_chunks(chunk_seq, array_slice, pad_type );
-                
-            });
-
-        }
-
+/// Encodes all sequences in parallel into a rectangular `Array2<f32>`
+/// of the given `length`.
+fn encode_parallel(
+    sequences: &[Vec<u8>],
+    pad_type: &str,
+    length: usize,
+    pool: &rayon::ThreadPool,
+) -> Array3<f32> {
+    let mut final_array= Array3::<f32>::zeros((sequences.len(), length, 2));
+    pool.install(|| {
+        sequences
+            .par_iter()
+            .zip(final_array.axis_iter_mut(Axis(0)).into_par_iter())
+            .for_each(|(seq,  row)| match pad_type {
+                "after" => chaos_after_fixed(seq, row),
+                "before" => chaos_before_fixed(seq, row),
+                _ => panic!("The only 2 options for the type of padding are 'before' and 'after'."),
+    
+                })
     });
 
-
-// ####################################### end of threads #####################################
-
-    array
-
+    final_array
 }
 
+fn encode_parallel_no_pad(sequences: &[Vec<u8>], pool: &rayon::ThreadPool) -> Vec<Array2<f32>> {
+    pool.install(|| sequences.par_iter().map(|seq| chaos_no_pad(seq)).collect())
+}
 
-/// Returns a PyList of Numpy i8 2D array to Python
+/// Returns a Numpy f32 3D array, or -- when `pad_length == 0` -- a Python
+/// `list` of 1D Numpy f32 arrays, one per sequence, unpadded/untrimmed.
 ///
 /// # Arguments
 /// * `py` - Python GIL token (used to acquire the GIL)
@@ -225,21 +129,35 @@ fn multithreads(sequences: Vec<String>, pad_type: &str, mut array: Array3<f64>, 
 /// * `pad_type` - &str indicating to padd (or trim) "before" or "after" the sequences
 /// * `pad_length` - -2 to pad according to the longest sequence, -1 to trim to the shortest sequence, 0 for no paddding, any positive number for a fixed length.
 /// * `n_jobs` - number of threads to use. 0 to use every cpu
-#[allow(unused_must_use)]
 #[pyfunction]
-pub fn chaos_encoding_rust<'pyt>(py:  Python <'pyt>, sequences_py: &Bound<'pyt, PyList>, pad_type: &str, pad_length: i128, n_jobs: i16 ) ->  Bound<'pyt, PyArray3<f64>> {
+pub fn chaos_encoding_rust<'pyt>(
+    py: Python<'pyt>,
+    sequences_py: &Bound<'pyt, PyList>,
+    pad_type: &str,
+    pad_length: i128,
+    n_jobs: i16,
+) -> PyResult<Py<PyAny>> {
+    let sequences = utils::extract_all_sequences(sequences_py)?;
+    let cpu_to_use = utils::check_nb_cpus(n_jobs);
 
-    let sequences: Vec<String> = sequences_py.extract().expect("Error unpacking Python object to Rust");
+    
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(cpu_to_use)
+        .build()
+        .expect("Failed to build rayon thread pool");
 
-    let vec_length= utils::get_length(&sequences, pad_length);
-    let cpu_to_use= utils::check_nb_cpus(n_jobs);
+    if pad_length == 0 {
+        let results = py.detach(|| encode_parallel_no_pad(&sequences, &pool));
+        let py_list = PyList::empty(py);
+        for arr in results {
+            py_list.append(arr.into_pyarray(py))?;
+        }
+        return Ok(py_list.unbind().into());
+    }
 
-    let mut final_array= Array3::<f64>::zeros((sequences.len(), vec_length, 2));
+    let vec_length = utils::get_length_vec(&sequences, pad_length);
+    let final_array =
+        py.detach(|| encode_parallel(&sequences, pad_type, vec_length, &pool));
 
-
-    final_array= py.detach(move || multithreads(sequences, pad_type, final_array, cpu_to_use));
-
-    final_array.to_pyarray(py)
-
-
+    Ok(final_array.into_pyarray(py).unbind().into())
 }
