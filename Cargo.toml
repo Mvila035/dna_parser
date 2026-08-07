@@ -19,3 +19,4 @@ ahash = "0.8.11"
 phf = { version = "0.11", features = ["macros"] }
 rayon = "1.10.0"
 indexmap = "2.7.0"
+needletail="0.7.3"
