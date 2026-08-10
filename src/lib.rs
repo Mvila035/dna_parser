@@ -12,6 +12,7 @@ pub mod eiip;
 pub mod dna_walk;
 pub mod fickett;
 pub mod atomic_number;
+pub mod fastx;
 
 
 
@@ -33,6 +34,7 @@ use eiip::*;
 use dna_walk::*;
 use fickett::*;
 use atomic_number::*;
+use fastx::*;
 
 
 
@@ -57,7 +59,8 @@ fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
     m.add_function(wrap_pyfunction!(fit_rust,m)?)?;
     m.add_function(wrap_pyfunction!(transform_rust,m)?)?;
     
-
+    m.add_class::<SequenceReader>()?;
+    m.add_class::<SequenceRecord>()?;
 
     Ok(())
 }
