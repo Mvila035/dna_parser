@@ -13,6 +13,8 @@ pub mod dna_walk;
 pub mod fickett;
 pub mod atomic_number;
 pub mod fastx;
+pub mod tokenizer;
+pub mod token_maps;
 
 
 
@@ -35,6 +37,7 @@ use dna_walk::*;
 use fickett::*;
 use atomic_number::*;
 use fastx::*;
+use tokenizer::*;
 
 
 
@@ -61,6 +64,7 @@ fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
     
     m.add_class::<SequenceReader>()?;
     m.add_class::<SequenceRecord>()?;
+    m.add_class::<DNATokenizer>()?;
 
     Ok(())
 }
