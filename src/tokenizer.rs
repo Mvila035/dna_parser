@@ -86,7 +86,7 @@ impl DNATokenizer {
     }
 
     #[pyo3(signature = (sequences, n_jobs=1 ))]
-    fn seqs_to_id<'pyt>(&self, py: Python<'pyt>, sequences: &Bound<'pyt, PyList>, n_jobs: i16)-> PyResult<Py<PyAny>> {
+    fn seqs_to_id<'pyt>(&self, py: Python<'pyt>, sequences: &Bound<'pyt, PyAny>, n_jobs: i16)-> PyResult<Py<PyAny>> {
         
         let mut sequences = utils::extract_all_sequences(sequences)?;
         let cpu_to_use = utils::check_nb_cpus(n_jobs);

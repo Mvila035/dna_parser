@@ -234,7 +234,7 @@ fn encode_parallel_no_pad(sequences: &[Vec<u8>],downsampling: usize, drop_remain
 #[pyfunction]
 pub fn zcurve_encoding_rust<'pyt>(
     py: Python<'pyt>,
-    sequences_py: &Bound<'pyt, PyList>,
+    sequences_py: &Bound<'pyt, PyAny>,
     pad_type: &str,
     pad_length: i128,
     downsampling: usize,

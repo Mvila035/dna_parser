@@ -132,7 +132,7 @@ fn encode_parallel_no_pad(sequences: &[Vec<u8>], pool: &rayon::ThreadPool) -> Ve
 #[pyfunction]
 pub fn chaos_encoding_rust<'pyt>(
     py: Python<'pyt>,
-    sequences_py: &Bound<'pyt, PyList>,
+    sequences_py: &Bound<'pyt, PyAny>,
     pad_type: &str,
     pad_length: i128,
     n_jobs: i16,

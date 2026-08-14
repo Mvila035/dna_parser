@@ -1,6 +1,8 @@
 import pytest
-from dna_parser import SequenceReader, SequenceRecord
-import numpy
+from dna_parser import SequenceReader, SequenceRecord, eiip_encoding, DNATokenizer
+import numpy as np
+from Bio import SeqIO
+from pysam import FastxFile
 
 def test_load_fasta():
 
@@ -33,21 +35,6 @@ def test_seq_metadata_fasta():
 
     assert expected == results
 
-# def test_list_of_paths():
-#     paths= ["tests/seq_test.fasta","tests/seq_test.fasta","tests/seq_test.fasta"]
-
-#     fasta_expected= [ ("sequence1", "acgtatgcgtcgtc"), ("sequence2","cccgtga---gtcgat"), ("sequence3","xgtcgycaaatcg-?")]*3
-#     metadata_expected= ["sequence1", "sequence2", "sequence3"]*3
-#     sequences_expected= ["acgtatgcgtcgtc", "cccgtga---gtcgat", "xgtcgycaaatcg-?"]*3
-    
-#     fasta= load_fasta(paths)
-#     metadata= load_metadata(paths)
-#     sequences= load_sequences(paths)
-
-#     assert fasta == fasta_expected
-#     assert metadata == metadata_expected
-#     assert sequences == sequences_expected
-   
 
 
 def test_reset():
@@ -67,4 +54,26 @@ def test_reset():
     results= reader.get_sequences()
 
     assert expected == results
+
+def test_encode_from_file():
+
+    reader_pysam= FastxFile("tests/seq_test.fasta")
+    reader_biopython= SeqIO.parse("tests/seq_test.fasta", "fasta")
+    reader_needletail= SequenceReader("tests/seq_test.fasta")
+
+    assert eiip_encoding(reader_pysam).all() == eiip_encoding(reader_biopython).all()  == eiip_encoding(reader_needletail).all() 
+    
+    reader_pysam= FastxFile("tests/seq_test.fasta")
+    reader_biopython= SeqIO.parse("tests/seq_test.fasta", "fasta")
+    reader_needletail= SequenceReader("tests/seq_test.fasta")
+    tokenizer= DNATokenizer(pad_length=-2)
+
+    assert tokenizer.seqs_to_id(reader_pysam).all() == tokenizer.seqs_to_id(reader_biopython).all()  == tokenizer.seqs_to_id(reader_needletail).all() 
+    
+    reader_needletail= SequenceReader("tests/seq_test.fasta.xz")
+    tokenizer= DNATokenizer(pad_length=0)
+
+    assert isinstance(tokenizer.seqs_to_id(reader_needletail), list)
+    reader_needletail.reset()
+    assert isinstance(tokenizer.seqs_to_id(reader_needletail)[0], np.ndarray)
     

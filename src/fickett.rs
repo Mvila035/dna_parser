@@ -2,7 +2,6 @@ use numpy::ndarray::{ArrayBase, ViewRepr};
 use numpy::ndarray::{Axis, Dim};
 use numpy::ndarray::Array1;
 use pyo3::prelude::*;
-use pyo3::types::PyList;
 use numpy::IntoPyArray;
 use phf::phf_map;
 use rayon::prelude::*;
@@ -171,7 +170,7 @@ fn encode_parallel(
 #[pyfunction]
 pub fn fickett_score_rust<'pyt>(
     py: Python<'pyt>,
-    sequences_py: &Bound<'pyt, PyList>,
+    sequences_py: &Bound<'pyt, PyAny>,
     n_jobs: i16,
 ) -> PyResult<Py<PyAny>> {
     let sequences = utils::extract_all_sequences(sequences_py)?;
