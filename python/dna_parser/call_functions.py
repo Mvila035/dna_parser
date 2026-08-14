@@ -46,36 +46,3 @@ def make_kmers(sequences, window_size= 3, stride= 3, drop_remainder= False, n_jo
 
     return make_kmers_rust(sequences, window_size, stride, drop_remainder, n_jobs)
 
-def load_fasta(path):
-
-    if type(path) is str:
-        return [(seq.id, seq.seq) for seq in parse_fastx_file(path)]
-    
-    elif type(path) is list:
-        
-        sequences= [ (seq.id, seq.seq) for file in path for seq in parse_fastx_file(file) ]
-        return sequences
- 
-
-def load_metadata(path):
-
-    
-    if type(path) is str:
-        return [seq.id for seq in parse_fastx_file(path)]
-    
-    elif type(path) is list:
-        
-        sequences= [ seq.id for file in path for seq in parse_fastx_file(file)]
-        return sequences
-    
-
-        
-def load_sequences(path):
-
-    if type(path) is str:
-        return [seq.seq for seq in parse_fastx_file(path)]
-    
-    elif type(path) is list:
-        
-        sequences= [ seq.seq for file in path for seq in parse_fastx_file(file)]
-        return sequences
