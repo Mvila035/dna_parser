@@ -103,7 +103,7 @@ fn get_content_prob(nt_value: f32, nt_type: &str) -> f32 {
 
 
 
-fn fickett_score(sequence: &[u8], mut score: ArrayBase<ViewRepr<&mut f32>, Dim<[usize; 0]>>){
+fn fickett_score_rust(sequence: &[u8], mut score: ArrayBase<ViewRepr<&mut f32>, Dim<[usize; 0]>>){
     
     let seq_len= sequence.len();
     let mut a_counts= [0,0,0];
@@ -159,7 +159,7 @@ fn encode_parallel(
         sequences
             .par_iter()
             .zip(final_array.axis_iter_mut(Axis(0)).into_par_iter())
-            .for_each(|(seq,  cell)| {fickett_score(seq, cell);})
+            .for_each(|(seq,  cell)| {fickett_score_rust(seq, cell);})
     });
 
     final_array
@@ -168,12 +168,13 @@ fn encode_parallel(
 
 
 #[pyfunction]
-pub fn fickett_score_rust<'pyt>(
+#[pyo3(signature = (sequences, n_jobs=1))]
+pub fn fickett_score<'pyt>(
     py: Python<'pyt>,
-    sequences_py: &Bound<'pyt, PyAny>,
+    sequences: &Bound<'pyt, PyAny>,
     n_jobs: i16,
 ) -> PyResult<Py<PyAny>> {
-    let sequences = utils::extract_all_sequences(sequences_py)?;
+    let sequences_rust = utils::extract_all_sequences(sequences)?;
     let cpu_to_use = utils::check_nb_cpus(n_jobs);
 
     
@@ -183,7 +184,7 @@ pub fn fickett_score_rust<'pyt>(
         .expect("Failed to build rayon thread pool");
 
     let final_array =
-        py.detach(|| encode_parallel(&sequences, &pool));
+        py.detach(|| encode_parallel(&sequences_rust, &pool));
 
     Ok(final_array.into_pyarray(py).unbind().into())
 }

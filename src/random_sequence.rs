@@ -95,7 +95,8 @@ fn parse_type_seq(length: i64, nb_of_seq: i64, seq_type: &str)-> Vec<String> {
 /// * `seq_type` - either "dna", "rna" or "aa" (for amino acid)
 /// * `n_jobs` - number of threads to use. 0 to use every cpu in your machine
 #[pyfunction]
-pub fn random_seq_rust(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16) -> Vec<String>{
+#[pyo3(signature = (length, nb_of_seq, seq_type="dna", n_jobs=1))]
+pub fn random_seq(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16) -> Vec<String>{
 
     let cpu_to_use= utils::check_nb_cpus(n_jobs);
 

@@ -61,7 +61,7 @@ def test_encode_from_file():
     reader_biopython= SeqIO.parse("tests/seq_test.fasta", "fasta")
     reader_needletail= SequenceReader("tests/seq_test.fasta")
 
-    assert eiip_encoding(reader_pysam).all() == eiip_encoding(reader_biopython).all()  == eiip_encoding(reader_needletail).all() 
+    assert eiip_encoding(reader_pysam, pad_length=-2).all() == eiip_encoding(reader_biopython, pad_length=-2).all()  == eiip_encoding(reader_needletail, pad_length=-2).all() 
     
     reader_pysam= FastxFile("tests/seq_test.fasta")
     reader_biopython= SeqIO.parse("tests/seq_test.fasta", "fasta")

@@ -10,7 +10,7 @@ DNA_SEQUENCES = [
 
 def test_shape():
 
-    results= onehot_encoding([DNA_SEQUENCES[0]])[0]
+    results= onehot_encoding([DNA_SEQUENCES[0]], pad_length=-2)[0]
 
     assert results.shape == (3,4)
 
@@ -19,7 +19,7 @@ def test_onehot():
 
     expected= numpy.array([[0,0,1,0], [1,0,0,0],  [1,0,0,0]])
 
-    results= onehot_encoding([DNA_SEQUENCES[0]])[0]
+    results= onehot_encoding([DNA_SEQUENCES[0]], pad_length=-2)[0]
 
     test_matrix= results == expected
 
@@ -30,8 +30,8 @@ def test_onehot():
 
 def test_caps():
     
-    results1= onehot_encoding([DNA_SEQUENCES[0]])[0]
-    results2= onehot_encoding([DNA_SEQUENCES[-1]])[0]
+    results1= onehot_encoding([DNA_SEQUENCES[0]], pad_length=-2)[0]
+    results2= onehot_encoding([DNA_SEQUENCES[-1]], pad_length=-2)[0]
 
     test_matrix= results1 == results2
 
@@ -45,7 +45,7 @@ def test_caps():
 def test_unexpected_char():
     expected= numpy.array([[0,0,1,0], [0,0,0,1],  [0,0,0,0], [0,0,0,0], [0,1,0,0], [0,0,0,0] ])
 
-    results= onehot_encoding([DNA_SEQUENCES[1]])[0]
+    results= onehot_encoding([DNA_SEQUENCES[1]], pad_length=-2)[0]
 
     test_matrix= results == expected
 

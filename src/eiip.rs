@@ -83,14 +83,15 @@ fn encode_parallel_no_pad(sequences: &[Vec<u8>], pool: &rayon::ThreadPool) -> Ve
 ///   fixed length.
 /// * `n_jobs` - number of threads to use, 0 to use every cpu
 #[pyfunction]
-pub fn eiip_encoding_rust<'pyt>(
+#[pyo3(signature = (sequences, pad_type="after", pad_length=0, n_jobs=1))]
+pub fn eiip_encoding<'pyt>(
     py: Python<'pyt>,
-    sequences_py: &Bound<'pyt, PyAny>,
+    sequences: &Bound<'pyt, PyAny>,
     pad_type: &str,
     pad_length: i128,
     n_jobs: i16,
 ) -> PyResult<Py<PyAny>> {
-    let sequences = utils::extract_all_sequences(sequences_py)?;
+    let sequences_rust = utils::extract_all_sequences(sequences)?;
     let cpu_to_use = utils::check_nb_cpus(n_jobs);
 
     
@@ -100,7 +101,7 @@ pub fn eiip_encoding_rust<'pyt>(
         .expect("Failed to build rayon thread pool");
 
     if pad_length == 0 {
-        let results = py.detach(|| encode_parallel_no_pad(&sequences, &pool));
+        let results = py.detach(|| encode_parallel_no_pad(&sequences_rust, &pool));
         let py_list = PyList::empty(py);
         for arr in results {
             py_list.append(arr.into_pyarray(py))?;
@@ -108,9 +109,9 @@ pub fn eiip_encoding_rust<'pyt>(
         return Ok(py_list.unbind().into());
     }
 
-    let vec_length = utils::get_length_vec(&sequences, pad_length);
+    let vec_length = utils::get_length_vec(&sequences_rust, pad_length);
     let final_array =
-        py.detach(|| encode_parallel(&sequences, pad_type, vec_length, &pool));
+        py.detach(|| encode_parallel(&sequences_rust, pad_type, vec_length, &pool));
 
     Ok(final_array.into_pyarray(py).unbind().into())
 }
