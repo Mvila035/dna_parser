@@ -1,97 +1,74 @@
-
 use pyo3::prelude::*;
-use rayon::prelude::*;
 use pyo3::types::PyList;
+use numpy::{PyArray2, ndarray::Array2};
 use crate::utils;
 
-
-/// Returns a string with white spaces inserted every k characters.
 #[pyfunction]
 pub fn insert_white_spaces(seq: String, k: i64) -> String {
-
-    let mut new_str= String::from("");
-    let k_usize= k as usize;
-    for (i,c) in seq.chars().enumerate() {
-
+    let mut new_str = String::from("");
+    let k_usize = k as usize;
+    for (i, c) in seq.chars().enumerate() {
         new_str.push(c);
-
-        if (i+1)%k_usize == 0 {
-
+        if (i + 1) % k_usize == 0 {
             new_str.push(' ');
-    
         }
-        
-    }   
-
+    }
     new_str
 }
 
-fn kmerize(seq: &[u8], window_size: usize, stride: usize, drop_remainder: bool) -> Vec<&[u8]> {
+fn kmerize_into_buf(
+    seq: &[u8],
+    window_size: usize,
+    stride: usize,
+    drop_remainder: bool,
+) -> Vec<u8> {
+    let n_full = (seq.len() - window_size) / stride + 1;
+    let last_start = n_full * stride;           // next window's start position
+    let remainder_len = seq.len() - last_start; // 0 if it divides perfectly
 
-    if window_size == 0 || stride == 0 || seq.len() < window_size {
-        panic!("window_size is smaller or equal to 0,
-                stride is smaller or equal to 0, or sequence is smaller than window_size")
-    }
+    let has_remainder = !drop_remainder && remainder_len > 0;
+    let n_rows = n_full + if has_remainder { 1 } else { 0 };
 
-    let estimated_chunks = (seq.len() - window_size) / stride + 1;
-    let mut result = Vec::with_capacity(estimated_chunks);
+    let mut buf = vec![0u8; n_rows * window_size]; // zero-init -> padding bytes are 0x00
 
     let mut start = 0;
-    while start + window_size <= seq.len() {
-        // Zero-allocation slicing (O(1) fat pointer creation)
-        result.push(&seq[start..start + window_size]);
+    let mut out_off = 0;
+    for _ in 0..n_full {
+        buf[out_off..out_off + window_size].copy_from_slice(&seq[start..start + window_size]);
         start += stride;
+        out_off += window_size;
     }
 
-    if !drop_remainder && start < seq.len() {
-        result.push(&seq[start..]);
+    if has_remainder {
+        buf[out_off..out_off + remainder_len].copy_from_slice(&seq[last_start..]);
+        // remaining bytes in this row stay 0x00 (padding)
     }
 
-    result
-}
-
-
-
-fn encode_parallel<'a>(sequences: &'a [Vec<u8>],
-                       window_size: usize, stride: usize,
-                       drop_remainder: bool, pool: &rayon::ThreadPool
-                        ) -> Vec<Vec<&'a [u8]>> {
-    pool.install(|| sequences.par_iter()
-                             .map(|seq| kmerize(seq, window_size, stride, drop_remainder))
-                             .collect())
+    buf
 }
 
 #[pyfunction]
 pub fn make_kmers_rust<'pyt>(
     py: Python<'pyt>,
-    sequences_py: &Bound<'pyt, PyList>,
+    sequences_py: &Bound<'pyt, PyAny>,
     window_size: usize,
     stride: usize,
     drop_remainder: bool,
-    n_jobs: i16,
 ) -> PyResult<Bound<'pyt, PyList>> {
-
-
     let sequences = utils::extract_all_sequences(sequences_py)?;
-    let cpu_to_use = utils::check_nb_cpus(n_jobs);
-    
-    let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(cpu_to_use)
-        .build()
-        .expect("Failed to build rayon thread pool");
 
-    let kmer_vecs=
-        py.detach(|| encode_parallel(&sequences, window_size, stride, drop_remainder, &pool));
+    let buffers: Vec<Vec<u8>> = sequences
+        .iter()
+        .map(|seq| kmerize_into_buf(seq, window_size, stride, drop_remainder))
+        .collect();
 
-    let mut outer_vec = Vec::with_capacity(kmer_vecs.len());
-    for inner in kmer_vecs {
-        let inner_list = PyList::new(
-            py,
-            inner.into_iter().map(|kmer| str::from_utf8(kmer).unwrap_or("")),
-        )?;
-        outer_vec.push(inner_list);
+    let out = PyList::empty(py);
+    for buf in buffers {
+        let n_kmers = buf.len() / window_size;
+        let arr = Array2::from_shape_vec((n_kmers, window_size), buf).unwrap();
+        let py_arr = PyArray2::from_owned_array(py, arr);
+        out.append(py_arr)?;
     }
 
-    PyList::new(py, outer_vec)
-
+    Ok(out)
 }
