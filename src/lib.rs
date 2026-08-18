@@ -15,6 +15,7 @@ pub mod atomic_number;
 pub mod fastx;
 pub mod tokenizer;
 pub mod token_maps;
+pub mod encoding;
 
 
 
@@ -38,6 +39,7 @@ use fickett::*;
 use atomic_number::*;
 use fastx::*;
 use tokenizer::*;
+use encoding::*;
 
 
 
@@ -61,6 +63,7 @@ fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
     m.add_function(wrap_pyfunction!(fit_transform_rust,m)?)?;
     m.add_function(wrap_pyfunction!(fit_rust,m)?)?;
     m.add_function(wrap_pyfunction!(transform_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(encode,m)?)?;
     
     m.add_class::<SequenceReader>()?;
     m.add_class::<SequenceRecord>()?;
