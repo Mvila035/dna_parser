@@ -40,7 +40,7 @@ fn onehot_before_fixed(sequence: &[u8], mut row: ArrayViewMut2<i32>){
 }
 
 fn onehot_no_pad(sequence: &[u8]) -> Array2<i32> {
-    let mut seq_array= Array2::<i32>::zeros((sequence.len(), 2));
+    let mut seq_array= Array2::<i32>::zeros((sequence.len(), 4));
     for (mut cols, &b) in seq_array.outer_iter_mut().zip(sequence.iter()) {
         cols.assign( &aview1(&ONEHOT_LUT[b as usize]));
     };
