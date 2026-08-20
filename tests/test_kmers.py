@@ -40,15 +40,22 @@ def test_window():
 
 def test_stride():
 
-    results_no_drop= make_kmers(DNA_SEQUENCES, kmer_size=3, stride=1)
-    results_drop= make_kmers(DNA_SEQUENCES, kmer_size=3, stride=1, drop_remainder=True)
+    results= make_kmers(DNA_SEQUENCES, kmer_size=3, stride=1)
+    
+    assert len(results[0]) == 7
+    assert len(results[1]) == 10
+    assert len(results[2]) == 7
 
-    assert len(results_no_drop[0]) == 8
-    assert len(results_no_drop[1]) == 11
-    assert len(results_no_drop[2]) == 8
+    results= make_kmers(DNA_SEQUENCES, kmer_size=3, stride=2)
 
-    assert len(results_drop[0]) == 7
-    assert len(results_drop[1]) == 10
-    assert len(results_drop[2]) == 7
+    assert len(results[0]) == 4
+    assert len(results[1]) == 6
+    assert len(results[2]) == 4
+
+    results= make_kmers(DNA_SEQUENCES, kmer_size=4, stride=3)
+
+    assert len(results[0]) == 3
+    assert len(results[1]) == 4
+    assert len(results[2]) == 3
 
 
