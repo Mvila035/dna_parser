@@ -3,14 +3,23 @@ from scipy.sparse import csr_matrix
 import numpy as np
 from sklearn.utils.sparsefuncs_fast import inplace_csr_row_normalize_l2
 
+class WrongTfidfConfig(Exception):
+    pass
 
 class NotFittedError(Exception):
+    pass
+
+class UnextendableCorpus(Exception):
     pass
 
 
 class Tfidf:
 
     def __init__(self, corpus, kmer, vocabulary=None, n_jobs=1, reader_fn=None, format=None):
+        
+        if isinstance(corpus, str) and reader_fn is None:
+            raise WrongTfidfConfig("If the corpus is a str, it should be a path to a file, and a function to read it (reader_fn) should be provided")
+
         self.vocabulary = vocabulary
         self.corpus = corpus
         self.kmer_size = kmer
@@ -30,12 +39,21 @@ class Tfidf:
         self.n_jobs = n_jobs
 
     def add_to_corpus(self, new_corpus):
+
+        if isinstance(new_corpus, str):
+            raise TypeError("The new corpus cannot be a str. If you want to add a single sequence pass it as list[str]")
+
         if hasattr(self.corpus, "extend") and callable(getattr(self.corpus, "extend")):
             self.corpus.extend(new_corpus)
         elif isinstance(self.corpus, list):
             self.corpus.extend(new_corpus)
-        else:
+        elif isinstance(self.corpus, set) or isinstance(self.corpus, tuple) :
             self.corpus = list(self.corpus) + list(new_corpus)
+        else:
+            raise UnextendableCorpus(("The corpus cannot be extended."
+                                    "A corpus can only be extended if it is a collection of sequences (such as list[str], set[str], tuple[str])\n"
+                                    "Check that your initial corpus is not a path to a file."))
+
         self.is_idf_uptodate = False
 
     def _get_sequence_source(self, sequences):
