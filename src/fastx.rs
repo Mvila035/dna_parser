@@ -124,6 +124,22 @@ impl SequenceReader {
     fn reset(&mut self){
         self.records= parse_fastx_file(&self.filepath).expect("Invalid path/file");
     }
+
+    fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
+    }
+
+    
+    fn __next__(&mut self) -> PyResult<Option<Vec<SequenceRecord>>> {
+        let records = self.get_records()?;
+        
+        if records.is_empty() {
+            
+            Ok(None)
+        } else {
+            Ok(Some(records))
+        }
+    }
 }
 
 
