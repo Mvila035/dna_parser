@@ -143,7 +143,7 @@ impl SequenceReader {
         let mut sequences: Vec<Vec<u8>> = Vec::new();
         let limit= self.batch_limit();
         
-        while sequences.len() <= limit {
+        while sequences.len() < limit {
             match self.records.next() {
                 Some(record) => {
                     let seqrec= record.map_err(|e| PyValueError::new_err(e.to_string()))?;
