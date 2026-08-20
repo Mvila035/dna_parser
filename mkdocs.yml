@@ -1,17 +1,88 @@
 site_name: dna-parser
+repo_url: https://github.com/Mvila035/dna_parser
+repo_name: Mvila035/dna_parser
+
 nav:
   - Home: index.md
-  - Documentation: documentation.md
-  - About: about.md
-  - License: license.md
+
+  - Documentation:
+    - Loading Sequences:
+      - SequenceReader: load_seq/SequenceReader.md
+      - SequenceRecord: load_seq/SequenceRecord.md
+
+    - Encodings:
+      - Atomic Number: encodings/atomic_number.md
+      - Chaos Game: encodings/chaos_game.md
+      - Custom: encodings/encode.md
+      - Cross : encodings/cross.md
+      - DNA-Walk: encodings/dna_walk.md
+      - EIIP: encodings/eiip.md
+      - Fickett Score: encodings/fickett.md
+      - Onehot (Voss): encodings/onehot.md
+      - Real (PAM): encodings/real.md
+      - TF-IDF: encodings/tfidf.md
+      - Tokens: encodings/tokenizer.md
+      - Z-Curve: encodings/z_curve.md
+      - Docs: documentation.md
+
+    - Other Functions:
+      - Kmers: others/kmers.md
+      - White Spaces: others/insert_white.md
+      - Generating Random Sequences: others/rand_seq.md
+
+
+  - About: 
+    - References: about/about.md
+    - License: about/license.md
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 
 markdown_extensions:
-    - pymdownx.arithmatex
+  - attr_list            
+  - def_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.arithmatex
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
 
 theme: 
-  name: readthedocs
+  name: material
+  features:
+  
+    - navigation.tabs          # Moves top-level navigation to horizontal header tabs
+    - navigation.sections      # Groups sidebar items into visible, clean sections
+    - navigation.sidebar.only  # Collapses everything into a clean left sidebar
+    - navigation.top           # Adds a sleek "Back to top" button
+    - navigation.tracking      # Highlights sidebar items as you scroll down the page
+    - toc.integrate            # Integrates the right Table of Contents into the left sidebar
+   
+  palette:
+    # Light mode
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
 
+    # Dark mode
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  
+plugins:
+  - mkdocstrings
 
