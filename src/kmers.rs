@@ -24,9 +24,9 @@ fn kmerize_into_buf(
 ) -> Vec<u8> {
     let n_full = (seq.len() - window_size) / stride + 1;
     let last_start = n_full * stride;           // next window's start position
-    let remainder_len = seq.len() - last_start; // 0 if it divides perfectly
+    let remainder_len = seq.len() - last_start; 
 
-    let has_remainder = !drop_remainder && remainder_len > 0;
+    let has_remainder = !drop_remainder && (seq.len() - window_size) % stride != 0; // check if divides perfectly
     let n_rows = n_full + if has_remainder { 1 } else { 0 };
 
     let mut buf = vec![0u8; n_rows * window_size]; // zero-init -> padding bytes are 0x00
