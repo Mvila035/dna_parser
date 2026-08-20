@@ -17,8 +17,8 @@ def test_kmer():
 
 def test_drop_remainder():
 
-    results_drop= make_kmers(DNA_SEQUENCES, window_size=2, stride=2, drop_remainder=True)
-    results_no_drop= make_kmers(DNA_SEQUENCES, window_size=2, stride=2, drop_remainder=False)
+    results_drop= make_kmers(DNA_SEQUENCES, kmer_size=2, stride=2, drop_remainder=True)
+    results_no_drop= make_kmers(DNA_SEQUENCES, kmer_size=2, stride=2, drop_remainder=False)
     
     assert len(results_drop[0]) == 4
     assert len(results_drop[1]) == 6
@@ -30,7 +30,7 @@ def test_drop_remainder():
 
 def test_window():
     
-    results= make_kmers(DNA_SEQUENCES, window_size=4, stride=1)
+    results= make_kmers(DNA_SEQUENCES, kmer_size=4, stride=1)
 
     assert len(results[0][0]) == 4
     assert len(results[1][0]) == 4
@@ -40,8 +40,8 @@ def test_window():
 
 def test_stride():
 
-    results_no_drop= make_kmers(DNA_SEQUENCES, window_size=3, stride=1)
-    results_drop= make_kmers(DNA_SEQUENCES, window_size=3, stride=1, drop_remainder=True)
+    results_no_drop= make_kmers(DNA_SEQUENCES, kmer_size=3, stride=1)
+    results_drop= make_kmers(DNA_SEQUENCES, kmer_size=3, stride=1, drop_remainder=True)
 
     assert len(results_no_drop[0]) == 8
     assert len(results_no_drop[1]) == 11

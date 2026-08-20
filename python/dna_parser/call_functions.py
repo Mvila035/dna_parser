@@ -1,10 +1,10 @@
 from .dna_parser import *
 
 
-def make_kmers(sequences, window_size=3, stride=3, drop_remainder=False, n_jobs=1):
+def make_kmers(sequences, kmer_size=3, stride=3, drop_remainder=False, n_jobs=1):
 
-    seqs = make_kmers_rust(sequences, window_size, stride, drop_remainder)
-    results = [seq.view(f'S{window_size}').reshape(-1).astype(str).tolist() for seq in seqs]
+    seqs = make_kmers_rust(sequences, kmer_size, stride, drop_remainder)
+    results = [seq.view(f'S{kmer_size}').reshape(-1).astype(str).tolist() for seq in seqs]
 
     if not drop_remainder:
         for kmer_list in results:
