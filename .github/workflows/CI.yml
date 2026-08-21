@@ -105,7 +105,7 @@ jobs:
             target: x86
             python_arch: x86
           - runner: windows-11-arm
-            target: aarch64
+            target: arm64
             python_arch: arm64
     steps:
       - uses: actions/checkout@v4
