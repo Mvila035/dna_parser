@@ -1,28 +1,27 @@
 import pytest
-from dna_parser import load_sequences, load_metadata, load_fasta
-import numpy
+from dna_parser import SequenceReader, SequenceRecord, eiip_encoding, DNATokenizer
+import numpy as np
+from Bio import SeqIO
+from pysam import FastxFile
 
 def test_load_fasta():
-    
-    expected= [ ("sequence1", "acgtatgcgtcgtc"),
-    ("sequence2","cccgtga---gtcgat"),
-    ("sequence3","xgtcgycaaatcg-?")]
 
-    results= load_fasta("tests/seq_test.fasta")
+    expected= ["acgtatgcgtcgtc", "cccgtga---gtcgat", "xgtcgycaaatcg-?"]
+    reader= SequenceReader("tests/seq_test.fasta")
+    results= reader.get_records()
 
-    for expected_tup, result_tup in list(zip(expected,results)):
+    for res, exp in list(zip(results, expected)):
         
-        print(expected_tup, result_tup)
-
-        assert expected_tup == result_tup
-    
+        assert isinstance(res, SequenceRecord)
+        assert res.seq == exp
     
 
 def test_seq_from_fasta():
     
     expected= ["acgtatgcgtcgtc", "cccgtga---gtcgat", "xgtcgycaaatcg-?"]
 
-    results= load_sequences("tests/seq_test.fasta")
+    reader= SequenceReader("tests/seq_test.fasta")
+    results= reader.get_sequences()
 
     assert expected == results
 
@@ -31,24 +30,50 @@ def test_seq_metadata_fasta():
 
     expected= ["sequence1", "sequence2", "sequence3"]
 
-    results= load_metadata("tests/seq_test.fasta")
+    reader= SequenceReader("tests/seq_test.fasta")
+    results= reader.get_ids()
 
     assert expected == results
 
-def test_list_of_paths():
-    paths= ["tests/seq_test.fasta","tests/seq_test.fasta","tests/seq_test.fasta"]
 
-    fasta_expected= [ ("sequence1", "acgtatgcgtcgtc"), ("sequence2","cccgtga---gtcgat"), ("sequence3","xgtcgycaaatcg-?")]*3
-    metadata_expected= ["sequence1", "sequence2", "sequence3"]*3
-    sequences_expected= ["acgtatgcgtcgtc", "cccgtga---gtcgat", "xgtcgycaaatcg-?"]*3
+
+def test_reset():
+
+    expected= ["sequence1", "sequence2", "sequence3"]
+
+    reader= SequenceReader("tests/seq_test.fasta")
+    results= reader.get_ids()
+
+    assert expected == results
+
+    reader.reset()
+
+    expected= ["acgtatgcgtcgtc", "cccgtga---gtcgat", "xgtcgycaaatcg-?"]
+
+    reader= SequenceReader("tests/seq_test.fasta")
+    results= reader.get_sequences()
+
+    assert expected == results
+
+def test_encode_from_file():
+
+    reader_pysam= FastxFile("tests/seq_test.fasta")
+    reader_biopython= SeqIO.parse("tests/seq_test.fasta", "fasta")
+    reader_needletail= SequenceReader("tests/seq_test.fasta")
+
+    assert eiip_encoding(reader_pysam, pad_length=-2).all() == eiip_encoding(reader_biopython, pad_length=-2).all()  == eiip_encoding(reader_needletail, pad_length=-2).all() 
     
-    fasta= load_fasta(paths)
-    metadata= load_metadata(paths)
-    sequences= load_sequences(paths)
+    reader_pysam= FastxFile("tests/seq_test.fasta")
+    reader_biopython= SeqIO.parse("tests/seq_test.fasta", "fasta")
+    reader_needletail= SequenceReader("tests/seq_test.fasta")
+    tokenizer= DNATokenizer(pad_length=-2)
 
-    assert fasta == fasta_expected
-    assert metadata == metadata_expected
-    assert sequences == sequences_expected
-   
+    assert tokenizer.seqs_to_id(reader_pysam).all() == tokenizer.seqs_to_id(reader_biopython).all()  == tokenizer.seqs_to_id(reader_needletail).all() 
+    
+    reader_needletail= SequenceReader("tests/seq_test.fasta.xz")
+    tokenizer= DNATokenizer(pad_length=0)
 
-
+    assert isinstance(tokenizer.seqs_to_id(reader_needletail), list)
+    reader_needletail.reset()
+    assert isinstance(tokenizer.seqs_to_id(reader_needletail)[0], np.ndarray)
+    
