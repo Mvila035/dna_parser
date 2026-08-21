@@ -9,24 +9,28 @@
       
       
       
+        <link rel="prev" href="../encode/">
+      
+      
+        <link rel="next" href="../dna_walk/">
       
       
         
       
       
-      <link rel="icon" href="/assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>dna-parser</title>
+        <title>Cross - dna-parser</title>
       
     
     
-      <link rel="stylesheet" href="/assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="/assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -45,9 +49,9 @@
       
     
     
-      <link rel="stylesheet" href="/assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -71,6 +75,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#function-cross_encoding" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -81,7 +90,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/." title="dna-parser" class="md-header__button md-logo" aria-label="dna-parser" data-md-component="logo">
+    <a href="../.." title="dna-parser" class="md-header__button md-logo" aria-label="dna-parser" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -101,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              Cross
             
           </span>
         </div>
@@ -172,7 +181,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -189,6 +198,8 @@
   
   
   
+    
+  
   
     
     
@@ -196,11 +207,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="/load_seq/SequenceReader/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../load_seq/SequenceReader/" class="md-tabs__link">
           
   
   
@@ -223,7 +236,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/about/about/" class="md-tabs__link">
+        <a href="../../about/about/" class="md-tabs__link">
           
   
   
@@ -259,7 +272,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/." title="dna-parser" class="md-nav__button md-logo" aria-label="dna-parser" data-md-component="logo">
+    <a href="../.." title="dna-parser" class="md-nav__button md-logo" aria-label="dna-parser" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -289,7 +302,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -313,26 +326,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -350,7 +368,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -374,17 +392,20 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
         
           
-          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="">
             
   
   
@@ -420,7 +441,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/load_seq/SequenceReader/" class="md-nav__link">
+      <a href="../../load_seq/SequenceReader/" class="md-nav__link">
         
   
   
@@ -448,7 +469,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/load_seq/SequenceRecord/" class="md-nav__link">
+      <a href="../../load_seq/SequenceRecord/" class="md-nav__link">
         
   
   
@@ -481,26 +502,31 @@
                 
   
   
+    
   
   
+  
     
     
     
     
       
       
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
         
           
-          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="">
             
   
   
@@ -518,7 +544,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -536,7 +562,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/atomic_number/" class="md-nav__link">
+      <a href="../atomic_number/" class="md-nav__link">
         
   
   
@@ -564,7 +590,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/chaos_game/" class="md-nav__link">
+      <a href="../chaos_game/" class="md-nav__link">
         
   
   
@@ -592,7 +618,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/encode/" class="md-nav__link">
+      <a href="../encode/" class="md-nav__link">
         
   
   
@@ -617,10 +643,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="/encodings/cross/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -636,6 +689,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Description
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -648,7 +765,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/dna_walk/" class="md-nav__link">
+      <a href="../dna_walk/" class="md-nav__link">
         
   
   
@@ -676,7 +793,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/eiip/" class="md-nav__link">
+      <a href="../eiip/" class="md-nav__link">
         
   
   
@@ -704,7 +821,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/fickett/" class="md-nav__link">
+      <a href="../fickett/" class="md-nav__link">
         
   
   
@@ -732,7 +849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/onehot/" class="md-nav__link">
+      <a href="../onehot/" class="md-nav__link">
         
   
   
@@ -760,7 +877,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/real/" class="md-nav__link">
+      <a href="../real/" class="md-nav__link">
         
   
   
@@ -788,7 +905,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/tfidf/" class="md-nav__link">
+      <a href="../tfidf/" class="md-nav__link">
         
   
   
@@ -816,7 +933,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/tokenizer/" class="md-nav__link">
+      <a href="../tokenizer/" class="md-nav__link">
         
   
   
@@ -844,7 +961,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/encodings/z_curve/" class="md-nav__link">
+      <a href="../z_curve/" class="md-nav__link">
         
   
   
@@ -872,7 +989,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/documentation.md" class="md-nav__link">
+      <a href="../../documentation.md" class="md-nav__link">
         
   
   
@@ -914,17 +1031,20 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
             
   
   
@@ -960,7 +1080,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/others/kmers/" class="md-nav__link">
+      <a href="../../others/kmers/" class="md-nav__link">
         
   
   
@@ -988,7 +1108,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/others/insert_white/" class="md-nav__link">
+      <a href="../../others/insert_white/" class="md-nav__link">
         
   
   
@@ -1016,7 +1136,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/others/rand_seq/" class="md-nav__link">
+      <a href="../../others/rand_seq/" class="md-nav__link">
         
   
   
@@ -1111,7 +1231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/about/about/" class="md-nav__link">
+      <a href="../../about/about/" class="md-nav__link">
         
   
   
@@ -1139,7 +1259,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/about/license/" class="md-nav__link">
+      <a href="../../about/license/" class="md-nav__link">
         
   
   
@@ -1180,8 +1300,134 @@
               
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+
+  
+  
+
+
+<h1 id="function-cross_encoding"><strong>Function: cross_encoding</strong></h1>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">cross_encoding</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">pad_type</span><span class="o">=</span> <span class="s2">&quot;after&quot;</span><span class="p">,</span> <span class="n">pad_length</span><span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+</span></code></pre></div>
+<h3 id="description"><strong>Description</strong></h3>
+<p>Encodes sequences converting each nucleotide as follows:</p>
+<ul>
+<li>A= [0,-1]</li>
+<li>C= [-1,0]</li>
+<li>G= [1,0]</li>
+<li>T/U= [0,1]</li>
+<li>Other characters or gaps = [0,0]</li>
+</ul>
+<h3 id="parameters"><strong>Parameters</strong></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>sequences</code></td>
+<td style="text-align: left;"><code>any iterable containing str</code></td>
+<td style="text-align: left;"><em>Required</em></td>
+<td style="text-align: left;">Sequences to encode, can also be dna-parser <code>SequenceReader</code>, pysam <code>FastxFile</code> or Biopython <code>SeqIO.read</code> objects.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>pad_type</code></td>
+<td style="text-align: left;"><code>str</code></td>
+<td style="text-align: left;"><code>after</code></td>
+<td style="text-align: left;">Whether to trim/pad at the front or at the back of the sequences. Options are <code>before</code> and <code>after</code>. This paramater is ignored if there is no padding</td>
+</tr>
+<tr>
+<td style="text-align: left;"><span style="white-space: nowrap;"><code>pad_length</code></span></td>
+<td style="text-align: left;"><code>int</code></td>
+<td style="text-align: left;"><code>0</code></td>
+<td style="text-align: left;">Length for padding/trimming. -2 to pad to the longest sequence, -1 to trim to the shortest sequence, any positive integer for a fixed length.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>n_jobs</code></td>
+<td style="text-align: left;"><code>int</code></td>
+<td style="text-align: left;"><code>1</code></td>
+<td style="text-align: left;">number of threads used to encode the sequences in parallel. 0 to use all CPUs available.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="returns"><strong>Returns</strong></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>list[numpy.ndarray]</code> or <code>numpy.ndarray</code></td>
+<td style="text-align: left;">The encoded sequences. Returns a list of 2D numpy arrays if there is no trimming/padding, otherwise returns a 3D numpy array with the outer dimension representing sequences.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples"><strong>Examples</strong></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">dna_parser</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dps</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">sequences</span><span class="o">=</span> <span class="p">[</span><span class="s2">&quot;agt&quot;</span><span class="p">,</span><span class="s2">&quot;acc&quot;</span><span class="p">]</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">encoding</span><span class="o">=</span> <span class="n">dps</span><span class="o">.</span><span class="n">cross_encoding</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Output:</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1">#[array([[ 1,  1],</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1">#        [-1,  1],</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1">#        [ 1, -1]], dtype=int32), </span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># array([[ 1,  1],</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1">#        [-1, -1],</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1">#        [-1, -1]], dtype=int32)]</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">reader</span><span class="o">=</span> <span class="n">dps</span><span class="o">.</span><span class="n">SequenceReader</span><span class="p">(</span><span class="s2">&quot;path/to/file&quot;</span><span class="p">)</span> <span class="c1"># file with sequences agt, acc, attagc</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="n">encoding</span><span class="o">=</span> <span class="n">dps</span><span class="o">.</span><span class="n">cross_encoding</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">pad_type</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">,</span> <span class="n">pad_length</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span> <span class="c1">#pad after the sequences to the longest one</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="nb">print</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="nb">print</span><span class="p">(</span><span class="n">encoding</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="c1"># Output:</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1">#[[[ 1  1]</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="c1">#  [-1  1]</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="c1">#  [ 1 -1]</span>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="c1">#  [ 0  0]</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="c1">#  [ 0  0]</span>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="c1">#  [ 0  0]]</span>
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="c1">#</span>
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="c1"># [[ 1  1]</span>
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="c1">#  [-1 -1]</span>
+</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="c1">#  [-1 -1]</span>
+</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="c1">#  [ 0  0]</span>
+</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="c1">#  [ 0  0]</span>
+</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="c1">#  [ 0  0]]</span>
+</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a><span class="c1">#</span>
+</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="c1"># [[ 1  1]</span>
+</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="c1">#  [ 1 -1]</span>
+</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="c1">#  [ 1 -1]</span>
+</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a><span class="c1">#  [ 1  1]</span>
+</span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a><span class="c1">#  [-1  1]</span>
+</span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a><span class="c1">#  [-1 -1]]]</span>
+</span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a><span class="c1">#(3, 6, 2)</span>
+</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
@@ -1224,10 +1470,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/", "features": ["navigation.tabs", "navigation.sections", "navigation.sidebar.only", "navigation.top", "navigation.tracking", "toc.integrate"], "search": "/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.sidebar.only", "navigation.top", "navigation.tracking", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="/assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
       
