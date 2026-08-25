@@ -9,6 +9,8 @@ Each sequence is encoded in a square with vertices A: (1,1), C: (-1,-1),
 G: (1,-1), T/U: (-1,1). The sequence representation starts at the center of the square in (0,0). The first nucleotide is represented as a point halfway between the starting point and its corresponding vertice. 
 Each following nucleotide a new point halfaway between the previous point and its corresponding vertice. If a character other than A,C,G,T or U is encountered, the values are not updated and values from the previous point are used.
 
+See the [About](../about/about.md#chaos-game) section for more details.
+
 ### **Parameters**
 
 | Parameter | Type | Default | Description |

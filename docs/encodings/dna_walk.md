@@ -14,6 +14,8 @@ Each sequence is represented on a 2D grid, with its representation starting at c
 * T/U: $x_{n+1}= x+1$; &nbsp; $y_{n+1}= y_{n}$
 * Other characters or gaps: $x_{n+1}= x_{n}$; &nbsp; $y_{n+1}= y_{n}$
 
+See the [About](../about/about.md#dna-walk) section for more details.
+
 ### **Parameters**
 
 | Parameter | Type | Default | Description |

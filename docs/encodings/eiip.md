@@ -13,6 +13,7 @@ Encodes sequences converting each nucleotide to its electron-ion interaction pse
 * T/U= 0.1335
 * Other characters or gaps = 0.0
 
+See the [About](../about/about.md#eiip) section for more details.
 
 ### **Parameters**
 

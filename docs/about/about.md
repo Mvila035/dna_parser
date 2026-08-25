@@ -30,12 +30,12 @@ Reference used for the Fickett score:
 
 Fickett, James W. "Recognition of protein coding regions in DNA sequences." Nucleic acids research 10.17 (1982): 5303-5318.
 
-## Onehot (Voss)
+## Onehot (Voss) { #onehot }
 Reference used for the Onehot (Voss) encoding:
 
 Kwan, Hon Keung, and Swarna Bai Arniker. "Numerical representation of DNA sequences." 2009 IEEE International Conference on Electro/Information Technology. IEEE, 2009.
 
-## Real-number (PAM)
+## Real-number (PAM) { #real }
 Reference used for the real-number encoding:
 
 Chakravarthy, Niranjan, et al. "Autoregressive modeling and feature analysis of DNA sequences." EURASIP Journal on Advances in Signal Processing 2004 (2004): 1-16.

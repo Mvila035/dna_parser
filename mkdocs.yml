@@ -23,7 +23,6 @@ nav:
       - TF-IDF: encodings/tfidf.md
       - Tokens: encodings/tokenizer.md
       - Z-Curve: encodings/z_curve.md
-      - Docs: documentation.md
 
     - Other Functions:
       - Kmers: others/kmers.md

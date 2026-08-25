@@ -100,4 +100,4 @@ print(encodings)                                                                
 # array([[0.126 , 0.0806, 0.1335, 0.    , 0.    ],
 #        [0.126 , 0.134 , 0.134 , 0.0806, 0.1335]])
 ```
-All encodings with examples are available in the [Documentation](documentation.md) section.
+All encodings with examples are available in the [Documentation](https://github.com/Mvila035/dna_parser).

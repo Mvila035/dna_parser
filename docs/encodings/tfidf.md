@@ -1,6 +1,7 @@
 # **Tfidf Class**
 
-The `Tfidf` class encodes sequences using the Term Frequency-Inverse Document Frequency technique.
+The `Tfidf` class encodes sequences using the Term Frequency-Inverse Document Frequency technique. See the [About](../about/about.md#tf-idf) section for more details.
+
 
 ## **Class Signature**
 
