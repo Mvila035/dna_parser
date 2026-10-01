@@ -6,6 +6,7 @@ build-backend = "maturin"
 name = "dna_parser"
 dynamic = ["version"]
 requires-python = ">=3.11"
+readme = "README.md"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
