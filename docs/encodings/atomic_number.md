@@ -14,6 +14,7 @@ with rows representing sequences.
 * T/U= 66
 * Other characters or gaps = 0
 
+See the [About](../about/about.md#atomic-number) section for more details.
 
 ### **Parameters**
 

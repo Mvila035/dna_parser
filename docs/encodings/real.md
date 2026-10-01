@@ -13,6 +13,8 @@ Each nucleotide is encoded as follows:
 * T/U= 1.5
 * Other characters or gaps = 0
 
+See the [About](../about/about.md#real) section for more details.
+
 ### **Parameters**
 
 | Parameter | Type | Default | Description |

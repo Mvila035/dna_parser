@@ -13,6 +13,8 @@ Each nucleotide is encoded as follows:
 * T/U= [0,0,0,1]
 * Other characters or gaps = [0,0,0,0]
 
+See the [About](../about/about.md#onehot) section for more details.
+
 ### **Parameters**
 
 | Parameter | Type | Default | Description |
