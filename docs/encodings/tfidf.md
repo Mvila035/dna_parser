@@ -7,7 +7,7 @@ The `Tfidf` class encodes sequences using the Term Frequency-Inverse Document Fr
 ### `Tfidf`
 
 ```python
-class Tfidf(corpus, kmer, vocabulary=None, n_jobs=1, reader_fn=None, format=None)
+class Tfidf(corpus, kmer, vocabulary=None, smooth_idf=True, original_idf=False, n_jobs=1, reader_fn=None, format=None)
 ```
 
 **Constructor Parameters:**
@@ -17,6 +17,8 @@ class Tfidf(corpus, kmer, vocabulary=None, n_jobs=1, reader_fn=None, format=None
 | `corpus` | `iterable containing str` or `str` | *Required* | Sequences to encode, can also be a path to a file. |
 | `kmer` | `int` | *Required* | Size of the kmers used to build the vocabulary and compute the TF-IDF. |
 | <span style="white-space: nowrap;">`vocabulary`</span> | `dict[str,int]` | `None` | Dictionary mapping each kmers to consider for encoding to a unique integer value. |
+| `smooth_idf` | `bool` | `True` | If True computes the IDF, adding 1 to the numerator and denominator $IDF(t) = log(\frac{1+N}{1+df(t)})+1$. Otherwise $IDF(t) = log(\frac{N}{df(t)})+1$. This option matches the scikit-learn implementation. |
+| `original_idf` | `bool` | `False` | If True ignores 'smooth_idf' option and computes the IDF using the textbook definition $IDF(t) = log(\frac{N}{df(t)})$.  |
 | `n_jobs` | `int` | `1` | number of threads used to encode the sequences in parallel. 0 to use all CPUs available. |
 | `reader_fn` | `Callable` | `None` | Function to use to read sequences if `corpus`is a path to a file. |
 | `format` | `str` | `None` | Format of the file when using SeqIO.read from Biopython. Either `fasta` or `fastq`. |
@@ -40,6 +42,8 @@ Use these attributes to check the live state of your `Tfidf` instance.
 | `vocabulary` | `dict[str,int]` or `None` | Mapping of each kmer to its column index. `None` until it is provided in the constructor, via `set_vocabulary()`, or learned by `fit()` / `fit_transform()`. |
 | `idf` | `numpy.ndarray` or `None` | Inverse document frequency value for each term in `vocabulary`. `None` until `fit()` or `fit_transform()` has been called. |
 | <span style="white-space: nowrap;">`is_idf_uptodate`</span> | `bool` | `True` once `idf` has been computed for the current `vocabulary` and `corpus`. Reset to `False` by `set_vocabulary()` and `add_to_corpus()`. |
+| `smooth_idf` | `bool` | `True` | Whether to smooth the IDF values. |
+| `original_idf` | `bool` | `False` | Whether to use the IDF textbook definiton. |
 | `n_jobs` | `int` | Number of threads used to encode sequences in parallel. `0` uses all available CPUs. |
 | `reader_fn` | `Callable` or `None` | Function used to read sequences when `corpus` is a file path. |
 | `format` | `str` or `None` | Format passed to `reader_fn` when reading `corpus` from a file (e.g. `fasta` or `fastq`). |
@@ -135,7 +139,7 @@ Learns the vocabulary from `corpus` (if one was not already set) and computes th
 ### `.transform()` { #Tfidf.transform }
 
 ```python
-def transform(sequences=None, normalization: str = "L2") -> scipy.sparse.csr_matrix
+def transform(sequences=None, l2_norm: bool = True) -> scipy.sparse.csr_matrix
 ```
 
 Encodes sequences into a TF-IDF weighted sparse matrix using the fitted vocabulary and `idf` values.
@@ -143,7 +147,7 @@ Encodes sequences into a TF-IDF weighted sparse matrix using the fitted vocabula
 === "Parameters"
 
     * **`sequences`** (`iterable containing str` or `str`, *optional*): Sequences to encode, can also be a path to a file. Defaults to the instance's `corpus` when not provided.
-    * **`normalization`** (`str`, *optional*): Row normalization to apply to the resulting matrix. Currently supports `"L2"`. Defaults to `"L2"`.
+     * **`l2_norm`** (`bool`, *optional*): L2 Row normalization is applied to the resulting matrix.
 
 === "Returns"
 
@@ -157,36 +161,20 @@ Encodes sequences into a TF-IDF weighted sparse matrix using the fitted vocabula
 ### `.fit_transform()` { #Tfidf.fit_transform }
 
 ```python
-def fit_transform(normalization: str = "L2") -> scipy.sparse.csr_matrix
+def fit_transform(l2_norm: bool = True) -> scipy.sparse.csr_matrix
 ```
 
 Fits the vocabulary (if not already set) and `idf` values on `corpus`, then returns the TF-IDF encoded matrix in a single call.
 
 === "Parameters"
 
-    * **`normalization`** (`str`, *optional*): Row normalization to apply to the resulting matrix. Currently supports `"L2"`. Defaults to `"L2"`.
+    * **`l2_norm`** (`bool`, *optional*): L2 Row normalization is applied to the resulting matrix.
 
 === "Returns"
 
     * `scipy.sparse.csr_matrix`: The TF-IDF encoded matrix for `corpus`, with one row per sequence and one column per vocabulary term.
 ---
 
-### `.compute_idf()` { #Tfidf.compute_idf }
-
-```python
-def compute_idf(matrix: scipy.sparse.csr_matrix) -> None
-```
-
-Computes the inverse document frequency for each vocabulary term from a raw term-count matrix and stores it in `idf`. Called internally by `fit()` and `fit_transform()`.
-
-=== "Parameters"
-
-    * **`matrix`** (`scipy.sparse.csr_matrix`): Sparse matrix of raw kmer counts, with one row per sequence and one column per vocabulary term.
-
-=== "Returns"
-
-    * `None`
----
 
 ## Exceptions
 
@@ -201,6 +189,10 @@ Raised by `.transform()` when called before the instance has been fitted (i.e. b
 ### `UnextendableCorpus`
 
 Raised by `.add_to_corpus()` when the instance's `corpus` cannot be extended in place — i.e. it is not a `list`, `set`, `tuple`, or another object exposing its own `.extend()` method. This most commonly happens when `corpus` was set to a file path.
+
+### `NoReader`
+
+Raised if a string is passed as genomic sequence but no reader function is specified. A string is assumed to represent a path to a file containing sequences. To encode a single sequence, the sequence should be wrapped in a list.
 
 ---
 
