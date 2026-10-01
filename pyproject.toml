@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "dna_parser"
-project.version = "0.5.0"
+dynamic = ["version"]
 requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Rust",
@@ -12,7 +12,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
-dependencies = ['numpy >= 1.16.0', 'scipy >= 1.3.0',  "scikit-learn >= 1.5.0"]
+dependencies = ['numpy >= 1.16.0', 'scipy >= 1.3.0']
 
 [project.optional-dependencies]
 dev = ["pytest","mkdocs"]
