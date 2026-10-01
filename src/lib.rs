@@ -61,13 +61,16 @@ fn dna_parser(_py: Python<'_>, m: &Bound<PyModule>)-> PyResult<()> {
     m.add_function(wrap_pyfunction!(fickett_score,m)?)?;
     m.add_function(wrap_pyfunction!(atomic_encoding,m)?)?;
     m.add_function(wrap_pyfunction!(fit_transform_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(fit_transform_with_voc,m)?)?;
     m.add_function(wrap_pyfunction!(fit_rust,m)?)?;
     m.add_function(wrap_pyfunction!(transform_rust,m)?)?;
+    m.add_function(wrap_pyfunction!(get_vocab,m)?)?;
     m.add_function(wrap_pyfunction!(encode,m)?)?;
     
     m.add_class::<SequenceReader>()?;
     m.add_class::<SequenceRecord>()?;
     m.add_class::<DNATokenizer>()?;
+    m.add_class::<Vocabulary>()?;
 
     Ok(())
 }
