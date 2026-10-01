@@ -13,7 +13,7 @@ DNA_SEQUENCES = [
 
 def test_caps():
 
-    tfidf= Tfidf(DNA_SEQUENCES, kmer=3)
+    tfidf= Tfidf(DNA_SEQUENCES, kmer=3, original_idf=True)
     tfidf.fit()
     encoding= tfidf.transform()
     encoding= encoding.toarray()
@@ -27,7 +27,7 @@ def test_caps():
 
 def test_shape():
 
-    tfidf= Tfidf(DNA_SEQUENCES, kmer=3)
+    tfidf= Tfidf(DNA_SEQUENCES, kmer=3, original_idf=True)
     tfidf.fit()
     encodings= tfidf.transform()
     encodings= encodings.toarray()
@@ -38,7 +38,7 @@ def test_tfidf():
 
     expected= numpy.array([[0., 1, 0.], [0., 1, 0.], [0., 1, 0.], [0., 0., 1]]) 
 
-    tfidf= Tfidf(DNA_SEQUENCES, kmer=3)
+    tfidf= Tfidf(DNA_SEQUENCES, kmer=3, original_idf=True)
     encodings= tfidf.fit_transform()
     encodings= encodings.toarray()
     
@@ -53,8 +53,8 @@ def test_tfidf_no_normalization():
 
     expected= numpy.array([[0., 0.28768207, 0.], [0., 0.28768207, 0.], [0., 0.28768207, 0.], [0., 0., 1.38629436]]) 
 
-    tfidf= Tfidf(DNA_SEQUENCES, kmer=3, n_jobs=1)
-    encodings= tfidf.fit_transform(normalization= "None")
+    tfidf= Tfidf(DNA_SEQUENCES, kmer=3, original_idf=True, n_jobs=1)
+    encodings= tfidf.fit_transform(l2_norm=False)
     encodings= encodings.toarray()
     print(encodings)
     print(tfidf.vocabulary)
