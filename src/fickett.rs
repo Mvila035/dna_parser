@@ -83,7 +83,7 @@ fn get_position_prob(nt_value: f32, nt_type: &str) -> f32 {
         }
     }
 
-    panic!("Error computing Fickett score. Position Parameter in smaller than 0.")
+    0.
 }
 
 fn get_content_prob(nt_value: f32, nt_type: &str) -> f32 {
@@ -98,7 +98,7 @@ fn get_content_prob(nt_value: f32, nt_type: &str) -> f32 {
         }
     }
 
-    panic!("Error computing Fickett score. Content Parameter in smaller than 0.")
+    0.
 }
 
 
@@ -106,6 +106,10 @@ fn get_content_prob(nt_value: f32, nt_type: &str) -> f32 {
 fn fickett_score_rust(sequence: &[u8], mut score: ArrayBase<ViewRepr<&mut f32>, Dim<[usize; 0]>>){
     
     let seq_len= sequence.len();
+    //empty sequence has 0 probability to be a coding sequence 
+    if seq_len == 0 {
+        return 
+    }
     let mut a_counts= [0,0,0];
     let mut c_counts= [0,0,0];
     let mut g_counts= [0,0,0];
@@ -131,7 +135,6 @@ fn fickett_score_rust(sequence: &[u8], mut score: ArrayBase<ViewRepr<&mut f32>, 
     let c_position= *c_max as f32/ (c_min +1) as f32;
     let g_position= *g_max as f32/ (g_min +1) as f32;
     let t_position= *t_max as f32/ (t_min +1) as f32;
-
 
     score += get_content_prob(a_content,"A");
     score += get_content_prob(c_content,"C");
