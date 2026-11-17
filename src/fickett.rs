@@ -178,7 +178,7 @@ pub fn fickett_score<'pyt>(
     n_jobs: i16,
 ) -> PyResult<Py<PyAny>> {
     let sequences_rust = utils::extract_all_sequences(sequences)?;
-    let cpu_to_use = utils::check_nb_cpus(n_jobs);
+    let cpu_to_use = utils::check_nb_cpus(n_jobs)?;
 
     
     let pool = rayon::ThreadPoolBuilder::new()

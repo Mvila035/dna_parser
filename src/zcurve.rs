@@ -1,6 +1,7 @@
 use ndarray::ArrayViewMut2;
 use numpy::ndarray::{Array3, Array2, Axis};
 use numpy::IntoPyArray;
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use rayon::prelude::*;
@@ -31,22 +32,24 @@ fn step(nucleotide: u8, r: &mut i32, y: &mut i32, m: &mut i32, k: &mut i32, w: &
 }
 
 #[inline]
-fn get_downsampling_length(length:usize, downsampling: usize, drop_remainder: bool)-> usize{
+fn get_downsampling_length(length:usize, downsampling: usize, drop_remainder: bool)-> Result<usize,String> {
 
     if downsampling > length {
-        panic!("Downsampling value is greater than the length of the sequence!")
+        Err("Downsampling value is greater than the length of the sequence!".to_string())
+       
     }
 
-    if downsampling < 1 {
-        panic!("Downsampling value cannot be lower than 1")
+    else if downsampling < 1 {
+        Err("Downsampling value cannot be lower than 1".to_string())
+    
     }
 
-    if length%downsampling == 0 || drop_remainder {
-        return length/downsampling
+    else if length%downsampling == 0 || drop_remainder {
+        return Ok(length/downsampling)
     }
 
     else {
-        return (length/downsampling)+1
+        return Ok((length/downsampling)+1)
     }
 
 }
@@ -149,9 +152,9 @@ fn zcurve_before_fixed(sequence: &[u8], mut array: ArrayViewMut2<i32>, downsampl
 
 }
 
-fn zcurve_no_pad(sequence: &[u8], downsampling: usize, drop_remainder: bool) -> Array2<i32> {
+fn zcurve_no_pad(sequence: &[u8], downsampling: usize, drop_remainder: bool) -> Result<Array2<i32>,String>  {
     
-    let downsampling_lentgh= get_downsampling_length(sequence.len(), downsampling, drop_remainder);
+    let downsampling_lentgh= get_downsampling_length(sequence.len(), downsampling, drop_remainder)?;
     let mut array= Array2::<i32>::zeros((downsampling_lentgh,3));
     let mut r= 0;
     let mut y= 0;
@@ -185,7 +188,7 @@ fn zcurve_no_pad(sequence: &[u8], downsampling: usize, drop_remainder: bool) -> 
         cols[2]= w-s;
 
     }
-    array
+    Ok(array)
 }
 
 
@@ -200,9 +203,16 @@ fn encode_parallel(
     downsampling: usize,
     drop_remainder: bool,
     pool: &rayon::ThreadPool,
-) -> Array3<i32> {
-    let downsampling_lentgh= get_downsampling_length(length, downsampling, drop_remainder);
+) -> Result<Array3<i32>,PyErr> {
+    let downsampling_lentgh= get_downsampling_length(length, downsampling, drop_remainder).map_err(PyValueError::new_err)?;
     let mut final_array= Array3::<i32>::zeros((sequences.len(), downsampling_lentgh, 3));
+
+    if pad_type != "after" && pad_type != "before" {
+            return Err(PyValueError::new_err(
+                "The only 2 options for the type of padding are 'before' and 'after'.",
+            ));
+        }
+
     pool.install(|| {
         sequences
             .par_iter()
@@ -210,16 +220,21 @@ fn encode_parallel(
             .for_each(|(seq,  row)| match pad_type {
                 "after" => zcurve_after_fixed(seq, row, downsampling, drop_remainder),
                 "before" => zcurve_before_fixed(seq, row, downsampling,  drop_remainder),
-                _ => panic!("The only 2 options for the type of padding are 'before' and 'after'."),
+                _ => unreachable!(),
     
                 })
     });
 
-    final_array
+    Ok(final_array)
 }
 
-fn encode_parallel_no_pad(sequences: &[Vec<u8>],downsampling: usize, drop_remainder: bool, pool: &rayon::ThreadPool) -> Vec<Array2<i32>> {
-    pool.install(|| sequences.par_iter().map(|seq| zcurve_no_pad(seq, downsampling, drop_remainder))).collect()
+fn encode_parallel_no_pad(sequences: &[Vec<u8>],downsampling: usize, drop_remainder: bool, pool: &rayon::ThreadPool) -> Result<Vec<Array2<i32>>, PyErr> {
+    let result: Result<Vec<Array2<i32>>, String>= pool.install(|| {
+        sequences.par_iter()
+                 .map(|seq| zcurve_no_pad(seq, downsampling, drop_remainder))
+                 .collect()});
+    
+    result.map_err(PyValueError::new_err)
 }
 
 /// Returns a Numpy i32 3D array, or -- when `pad_length == 0` -- a Python
@@ -243,7 +258,7 @@ pub fn zcurve_encoding<'pyt>(
     n_jobs: i16,
 ) -> PyResult<Py<PyAny>> {
     let sequences_rust = utils::extract_all_sequences(sequences)?;
-    let cpu_to_use = utils::check_nb_cpus(n_jobs);
+    let cpu_to_use = utils::check_nb_cpus(n_jobs)?;
 
     
     let pool = rayon::ThreadPoolBuilder::new()
@@ -252,7 +267,7 @@ pub fn zcurve_encoding<'pyt>(
         .expect("Failed to build rayon thread pool");
 
     if pad_length == 0 {
-        let results = py.detach(|| encode_parallel_no_pad(&sequences_rust, downsampling, drop_remainder, &pool));
+        let results = py.detach(|| encode_parallel_no_pad(&sequences_rust, downsampling, drop_remainder, &pool))?;
         let py_list = PyList::empty(py);
         for arr in results {
             py_list.append(arr.into_pyarray(py))?;
@@ -262,9 +277,9 @@ pub fn zcurve_encoding<'pyt>(
 
     
 
-    let vec_length = utils::get_length_vec(&sequences_rust, pad_length);
+    let vec_length = utils::get_length_vec(&sequences_rust, pad_length)?;
     let final_array =
-        py.detach(|| encode_parallel(&sequences_rust, pad_type, vec_length, downsampling, drop_remainder, &pool));
+        py.detach(|| encode_parallel(&sequences_rust, pad_type, vec_length, downsampling, drop_remainder, &pool))?;
 
     Ok(final_array.into_pyarray(py).unbind().into())
 }

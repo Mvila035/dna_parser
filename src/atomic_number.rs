@@ -1,6 +1,7 @@
 use ndarray::ArrayViewMut1;
 use numpy::ndarray::{Array1, Array2, Axis};
 use numpy::IntoPyArray;
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use rayon::prelude::*;
@@ -47,8 +48,15 @@ fn encode_parallel(
     pad_type: &str,
     length: usize,
     pool: &rayon::ThreadPool,
-) -> Array2<i32> {
+) -> Result<Array2<i32>,PyErr> {
     let mut final_array= Array2::<i32>::zeros((sequences.len(), length));
+
+    if pad_type != "after" && pad_type != "before" {
+        return Err(PyValueError::new_err(
+            "The only 2 options for the type of padding are 'before' and 'after'.",
+        ));
+    }
+
     pool.install(|| {
         sequences
             .par_iter()
@@ -61,7 +69,7 @@ fn encode_parallel(
                 })
     });
 
-    final_array
+    Ok(final_array)
 }
 
 /// Encodes all sequences in parallel with no padding/trimming: each keeps
@@ -92,7 +100,7 @@ pub fn atomic_encoding<'pyt>(
     n_jobs: i16,
 ) -> PyResult<Py<PyAny>> {
     let sequences_rust = utils::extract_all_sequences(sequences)?;
-    let cpu_to_use = utils::check_nb_cpus(n_jobs);
+    let cpu_to_use = utils::check_nb_cpus(n_jobs)?;
 
     
     let pool = rayon::ThreadPoolBuilder::new()
@@ -109,9 +117,9 @@ pub fn atomic_encoding<'pyt>(
         return Ok(py_list.unbind().into());
     }
 
-    let vec_length = utils::get_length_vec(&sequences_rust, pad_length);
+    let vec_length = utils::get_length_vec(&sequences_rust, pad_length)?;
     let final_array =
-        py.detach(|| encode_parallel(&sequences_rust, pad_type, vec_length, &pool));
+        py.detach(|| encode_parallel(&sequences_rust, pad_type, vec_length, &pool))?;
 
     Ok(final_array.into_pyarray(py).unbind().into())
 }

@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 use std::collections::HashMap;
 use pyo3::types::{PyList};
 use rayon::prelude::*;
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::{PyTypeError, PyValueError};
 use crate::utils;
 use crate::token_maps::*;
 
@@ -49,11 +49,12 @@ impl DNATokenizer {
                         vocab= None, as_aa= false ))]
     fn new(kmer_size: usize, drop_remainder: bool, pad_type:String,
             pad_length: i128, add_cls: bool, vocab:Option<HashMap<String, i32>>,
-            as_aa: bool ) -> Self {
+            as_aa: bool ) -> Result<Self, PyErr> {
         
         if kmer_size != 3 && vocab.is_none() {
-            panic!("If kmer_size is not 3, a vocabulary must be provided!")
+            return Err(PyValueError::new_err("If kmer_size is not 3, a vocabulary must be provided!"))
         }
+
         let mut vocab_size= match as_aa {
             true => 25,
             false => 70
@@ -63,7 +64,7 @@ impl DNATokenizer {
 
         if vocab.is_some(){
                 vocab_size= vocab.as_ref().unwrap().len();
-                check_vocab(vocab.as_ref().unwrap(), add_cls);
+                check_vocab(vocab.as_ref().unwrap(), add_cls)?;
                 reverse_vocab = vocab.as_ref().map(|v| {
                 v.iter()
                 .map(|(k, id)| (*id, k.clone()))
@@ -71,7 +72,7 @@ impl DNATokenizer {
             });
         };
         
-        DNATokenizer{
+        Ok(DNATokenizer{
             kmer_size,
             drop_remainder,
             pad_type,
@@ -81,7 +82,7 @@ impl DNATokenizer {
             reverse_vocab,
             vocab_size,
             as_aa,
-        }
+        })
        
     }
 
@@ -89,7 +90,7 @@ impl DNATokenizer {
     fn seqs_to_id<'pyt>(&self, py: Python<'pyt>, sequences: &Bound<'pyt, PyAny>, n_jobs: i16)-> PyResult<Py<PyAny>> {
         
         let mut sequences = utils::extract_all_sequences(sequences)?;
-        let cpu_to_use = utils::check_nb_cpus(n_jobs);
+        let cpu_to_use = utils::check_nb_cpus(n_jobs)?;
         let lookup= make_lookup(&self.vocab, self.as_aa);
 
         let config= TokenizeConfig{
@@ -106,7 +107,7 @@ impl DNATokenizer {
             .expect("Failed to build rayon thread pool");
 
         if self.pad_length == 0 {
-            let results = py.detach(|| encode_parallel_no_pad(&mut sequences, &config, &pool));
+            let results = py.detach(|| encode_parallel_no_pad(&mut sequences, &config, &pool))?;
             let py_list = PyList::empty(py);
             for arr in results {
                 py_list.append(arr.into_pyarray(py))?;
@@ -114,9 +115,9 @@ impl DNATokenizer {
             return Ok(py_list.unbind().into());
         }
 
-        let vec_length = utils::get_length_vec(&sequences, self.pad_length);
+        let vec_length = utils::get_length_vec(&sequences, self.pad_length)?;
         let final_array =
-            py.detach(|| encode_parallel(&mut sequences, &self.pad_type, vec_length, &config, &pool));
+            py.detach(|| encode_parallel(&mut sequences, &self.pad_type, vec_length, &config, &pool))?;
 
         Ok(final_array.into_pyarray(py).unbind().into())
 
@@ -131,7 +132,7 @@ impl DNATokenizer {
             return Ok(str.to_string())    
         }
 
-        panic!("Cannot extract Token sequnce as a vector. Pass a Python List or numpy array only")
+        Err(PyTypeError::new_err("Cannot extract Token sequence as a vector. Pass a Python List or numpy array only"))
     }
 
 
@@ -150,23 +151,26 @@ fn decode_ids(ids: &[i32], reverse_vocab: &Option<HashMap<i32, String>>, as_aa: 
     out
 }
 
-fn check_vocab(vocab: &HashMap<String, i32>, add_cls: bool){
+fn check_vocab(vocab: &HashMap<String, i32>, add_cls: bool)-> Result< (), PyErr>{
 
     if !vocab.contains_key("[UNK]") {
-        panic!("Provided vocabulary must contain a '[UNK]' token!");
+        return Err(PyValueError::new_err("Provided vocabulary must contain a '[UNK]' token!"))
     }
 
      if !vocab.contains_key("[MASK]") {
-        panic!("Provided vocabulary must contain a '[MASK]' token!");
+        return Err(PyValueError::new_err("Provided vocabulary must contain a '[MASK]' token!"))
     }
 
     if !vocab.contains_key("[PAD]") {
-        panic!("Provided vocabulary must contain a '[PAD]' token!");
+        return Err(PyValueError::new_err("Provided vocabulary must contain a '[PAD]' token!"))
+
     }
 
     if add_cls && !vocab.contains_key("[CLS]") {
-        panic!("Provided vocabulary must contain a '[CLS]' token when add_cls is true!");
+        return Err(PyValueError::new_err("Provided vocabulary must contain a '[CLS]' token when add_cls is true!"))
     }
+
+    Ok(())
 }
     
 
@@ -219,14 +223,14 @@ fn make_reverse_lookup<'a>(
 
 
 #[inline]
-fn compute_array_length(length:usize, kmer_size: usize, drop_remainder: bool, add_cls: bool)-> usize{
+fn compute_array_length(length:usize, kmer_size: usize, drop_remainder: bool, add_cls: bool)-> Result<usize, String> {
 
     if kmer_size > length {
-        panic!("kmer_size value is greater than the length of the sequence!")
+       return Err("kmer_size value is greater than the length of the sequence! One of your sequence might be empty".to_string())
     }
 
     if kmer_size < 1 {
-        panic!("kmer_size value cannot be lower than 1")
+        return Err("kmer_size value cannot be lower than 1".to_string())
     }
 
     let mut final_len;
@@ -243,16 +247,16 @@ fn compute_array_length(length:usize, kmer_size: usize, drop_remainder: bool, ad
         final_len +=1
     }
 
-    final_len
+    Ok(final_len)
 
 }
 
 
 
-fn tokenize_no_pad(seq:&mut Vec<u8>, config: &TokenizeConfig ) -> Array1<i32> {
+fn tokenize_no_pad(seq:&mut Vec<u8>, config: &TokenizeConfig ) -> Result<Array1<i32>, String> {
     
     let arr_lentgh= compute_array_length(seq.len(), config.kmer_size,
-                                                         config.drop_remainder, config.add_cls,);
+                                                         config.drop_remainder, config.add_cls,)?;
     let mut array= Array1::<i32>::zeros(arr_lentgh);
 
     let mut cells=  array.outer_iter_mut();
@@ -278,13 +282,18 @@ fn tokenize_no_pad(seq:&mut Vec<u8>, config: &TokenizeConfig ) -> Array1<i32> {
            cell.fill((config.lookup_fn)(remainder));
         }
         
-    return array
+    return Ok(array)
 
 }
 
 
-fn encode_parallel_no_pad(sequences: &mut [Vec<u8>], config: &TokenizeConfig, pool: &rayon::ThreadPool) -> Vec<Array1<i32>> {
-    pool.install(|| sequences.par_iter_mut().map(|seq| tokenize_no_pad(seq, config)).collect())
+fn encode_parallel_no_pad(sequences: &mut [Vec<u8>], config: &TokenizeConfig, pool: &rayon::ThreadPool) -> Result<Vec<Array1<i32>>, PyErr> {
+    let result: Result<Vec<Array1<i32>>, String> = pool.install(|| {
+        sequences.par_iter_mut()
+                 .map(|seq| tokenize_no_pad(seq, config))
+                 .collect()});
+
+    result.map_err(PyValueError::new_err)
 }
 
 
@@ -367,23 +376,31 @@ pad_type: &str,
 length: usize,
 config: &TokenizeConfig,
 pool: &rayon::ThreadPool,
-) -> Array2<i32> {
-let pad_val= (config.lookup_fn)(b"[PAD]");
-let array_len= compute_array_length(length, config.kmer_size, config.drop_remainder, config.add_cls);
-let mut final_array= Array2::<i32>::from_elem((sequences.len(), array_len), pad_val);
-pool.install(|| {
-    sequences
-        .par_iter_mut()
-        .zip(final_array.axis_iter_mut(Axis(0)).into_par_iter())
-        .for_each(|(seq,  row)| match pad_type {
-            "after" => tokenize_after_fixed(seq, row, config),
-            "before" => tokenize_before_fixed(seq, row, config),
-            _ => panic!("The only 2 options for the type of padding are 'before' and 'after'."),
+) -> Result<Array2<i32>, PyErr> {
 
-            })
-});
+    let pad_val= (config.lookup_fn)(b"[PAD]");
 
-final_array
+    if pad_type != "after" && pad_type != "before" {
+            return Err(PyValueError::new_err(
+                "The only 2 options for the type of padding are 'before' and 'after'.",
+            ));
+        }
+
+    let array_len= compute_array_length(length, config.kmer_size, config.drop_remainder, config.add_cls).map_err(PyValueError::new_err)?;
+    let mut final_array= Array2::<i32>::from_elem((sequences.len(), array_len), pad_val);
+    pool.install(|| {
+        sequences
+            .par_iter_mut()
+            .zip(final_array.axis_iter_mut(Axis(0)).into_par_iter())
+            .for_each(|(seq,  row)| match pad_type {
+                "after" => tokenize_after_fixed(seq, row, config),
+                "before" => tokenize_before_fixed(seq, row, config),
+                _ => unreachable!()
+                
+                })
+    });
+
+    Ok(final_array)
 
 }
 

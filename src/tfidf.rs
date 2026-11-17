@@ -1,7 +1,7 @@
 use ndarray::prelude::*;
 use numpy::ndarray::{Array1, Axis};
 use numpy::array::PyArray1;
-use numpy::{IntoPyArray, PyReadonlyArray1, PyReadwriteArray1};
+use numpy::{IntoPyArray, PyReadonlyArray1};
 use pyo3::prelude::*;
 use rayon::prelude::*;
 use pyo3::exceptions::PyValueError;
@@ -269,9 +269,9 @@ pub fn fit_rust<'py>(
 ) -> PyResult<Py<PyArray1<f64>>> {
     
     let sequences_rust = extract_all_sequences(sequences)?;
+    let cpu_to_use = check_nb_cpus(n_jobs)?;
     
     let idf= py.detach(|| {
-        let cpu_to_use = check_nb_cpus(n_jobs);
         
         let (_, col_idx, indptr) = get_counts_csr(sequences_rust, &vocabulary.vocab, kmer_size, cpu_to_use);
         let col_idx= Array1::from_vec(col_idx);
@@ -303,9 +303,9 @@ pub fn transform_rust<'py>(
 
     let idf_view= idf.as_array();
     let sequences_rust = extract_all_sequences(sequences)?;
+    let cpu_to_use = check_nb_cpus(n_jobs)?;
     
     let (counts, col_idx, indptr)= py.detach(|| {
-        let cpu_to_use = check_nb_cpus(n_jobs);
 
         let (counts, col_idx, indptr) = get_counts_csr(sequences_rust, &vocabulary.vocab, kmer_size, cpu_to_use);
         let mut counts= Array1::from_vec(counts);
@@ -344,9 +344,9 @@ pub fn fit_transform_with_voc<'py>(
 ) -> PyResult<CsrAndIDF> {
 
     let sequences_rust = extract_all_sequences(sequences)?;
+    let cpu_to_use = check_nb_cpus(n_jobs)?;
     
         let (counts, col_idx, indptr, idf) = py.detach(||{
-        let cpu_to_use = check_nb_cpus(n_jobs);
         
         let (counts, col_idx, indptr) = get_counts_csr(sequences_rust, &vocabulary.vocab, kmer_size, cpu_to_use);
         let mut counts= Array1::from_vec(counts);
@@ -389,9 +389,10 @@ pub fn fit_transform_rust<'py>(
 ) -> PyResult<FitTransResults> {
 
     let mut sequences_rust = extract_all_sequences(sequences)?;
+    let cpu_to_use = check_nb_cpus(n_jobs)?;
 
    let(vocabulary, counts, col_idx, indptr, idf)= py.detach( || {
-        let cpu_to_use = check_nb_cpus(n_jobs);
+       
         let vocabulary= Vocabulary::from_bytes( Some(map_vocabulary(&mut sequences_rust, kmer_size)));
         
         let (counts, col_idx, indptr) = get_counts_csr(sequences_rust, &vocabulary.vocab, kmer_size, cpu_to_use);

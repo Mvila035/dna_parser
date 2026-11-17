@@ -1,6 +1,7 @@
 use ndarray::ArrayViewMut2;
 use numpy::ndarray::{Array3, Array2, Axis};
 use numpy::IntoPyArray;
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use rayon::prelude::*;
@@ -99,8 +100,15 @@ fn encode_parallel(
     pad_type: &str,
     length: usize,
     pool: &rayon::ThreadPool,
-) -> Array3<f32> {
+) -> Result<Array3<f32>, PyErr> {
     let mut final_array= Array3::<f32>::zeros((sequences.len(), length, 2));
+    
+    if pad_type != "after" && pad_type != "before" {
+        return Err(PyValueError::new_err(
+            "The only 2 options for the type of padding are 'before' and 'after'.",
+        ));
+    }
+    
     pool.install(|| {
         sequences
             .par_iter()
@@ -108,12 +116,12 @@ fn encode_parallel(
             .for_each(|(seq,  row)| match pad_type {
                 "after" => chaos_after_fixed(seq, row),
                 "before" => chaos_before_fixed(seq, row),
-                _ => panic!("The only 2 options for the type of padding are 'before' and 'after'."),
+                _ => unreachable!(),
     
                 })
     });
 
-    final_array
+    Ok(final_array)
 }
 
 fn encode_parallel_no_pad(sequences: &[Vec<u8>], pool: &rayon::ThreadPool) -> Vec<Array2<f32>> {
@@ -139,7 +147,7 @@ pub fn chaos_encoding<'pyt>(
     n_jobs: i16,
 ) -> PyResult<Py<PyAny>> {
     let sequences_rust = utils::extract_all_sequences(sequences)?;
-    let cpu_to_use = utils::check_nb_cpus(n_jobs);
+    let cpu_to_use = utils::check_nb_cpus(n_jobs)?;
 
     
     let pool = rayon::ThreadPoolBuilder::new()
@@ -156,9 +164,9 @@ pub fn chaos_encoding<'pyt>(
         return Ok(py_list.unbind().into());
     }
 
-    let vec_length = utils::get_length_vec(&sequences_rust, pad_length);
+    let vec_length = utils::get_length_vec(&sequences_rust, pad_length)?;
     let final_array =
-        py.detach(|| encode_parallel(&sequences_rust, pad_type, vec_length, &pool));
+        py.detach(|| encode_parallel(&sequences_rust, pad_type, vec_length, &pool))?;
 
     Ok(final_array.into_pyarray(py).unbind().into())
 }

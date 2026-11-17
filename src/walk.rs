@@ -3,6 +3,7 @@ use numpy::ndarray::{Array3, Array2, Axis};
 use numpy::IntoPyArray;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
+use pyo3::exceptions::PyValueError;
 use rayon::prelude::*;
 use crate::utils;
 
@@ -83,7 +84,14 @@ fn encode_parallel(
     pad_type: &str,
     length: usize,
     pool: &rayon::ThreadPool,
-) -> Array3<i32> {
+) -> Result<Array3<i32>, PyErr> {
+
+    if pad_type != "after" && pad_type != "before" {
+        return Err(PyValueError::new_err(
+            "The only 2 options for the type of padding are 'before' and 'after'.",
+        ));
+    }
+
     let mut final_array= Array3::<i32>::zeros((sequences.len(), length, 2));
     pool.install(|| {
         sequences
@@ -92,12 +100,12 @@ fn encode_parallel(
             .for_each(|(seq,  row)| match pad_type {
                 "after" => walk_after_fixed(seq, row),
                 "before" => walk_before_fixed(seq, row),
-                _ => panic!("The only 2 options for the type of padding are 'before' and 'after'."),
+                _ => unreachable!(),
     
                 })
     });
 
-    final_array
+    Ok(final_array)
 }
 
 fn encode_parallel_no_pad(sequences: &[Vec<u8>], pool: &rayon::ThreadPool) -> Vec<Array2<i32>> {
@@ -123,7 +131,7 @@ pub fn dna_walk<'pyt>(
     n_jobs: i16,
 ) -> PyResult<Py<PyAny>> {
     let sequences_rust = utils::extract_all_sequences(sequences)?;
-    let cpu_to_use = utils::check_nb_cpus(n_jobs);
+    let cpu_to_use = utils::check_nb_cpus(n_jobs)?;
 
     
     let pool = rayon::ThreadPoolBuilder::new()
@@ -140,9 +148,9 @@ pub fn dna_walk<'pyt>(
         return Ok(py_list.unbind().into());
     }
 
-    let vec_length = utils::get_length_vec(&sequences_rust, pad_length);
+    let vec_length = utils::get_length_vec(&sequences_rust, pad_length)?;
     let final_array =
-        py.detach(|| encode_parallel(&sequences_rust, pad_type, vec_length, &pool));
+        py.detach(|| encode_parallel(&sequences_rust, pad_type, vec_length, &pool))?;
 
     Ok(final_array.into_pyarray(py).unbind().into())
 }

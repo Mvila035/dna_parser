@@ -15,10 +15,16 @@ fn encode_scalar_parallel(
     lut: &[Vec<f64>],
     pad_val: f64,
     pool: &rayon::ThreadPool,
-) -> Array2<f64> {
+) -> Result<Array2<f64>, PyErr> {
     // Pre-fill the array with the padding value instead of zeros
     let mut final_array = Array2::from_elem((sequences.len(), length), pad_val);
     
+    if pad_type != "after" && pad_type != "before" {
+        return Err(PyValueError::new_err(
+            "The only 2 options for the type of padding are 'before' and 'after'.",
+        ));
+    }
+
     pool.install(|| {
         sequences
             .par_iter()
@@ -34,10 +40,11 @@ fn encode_scalar_parallel(
                         *col = lut[b as usize][0];
                     }
                 }
-                _ => panic!("The only 2 options for the type of padding are 'before' and 'after'."),
+                _ => unreachable!(),
             })
     });
-    final_array
+
+    Ok(final_array)
 }
 
 fn encode_scalar_no_pad(
@@ -63,10 +70,16 @@ fn encode_vector_parallel(
     lut: &[Vec<f64>],
     pad_vec: &[f64],
     pool: &rayon::ThreadPool,
-) -> Array3<f64> {
+) -> Result<Array3<f64>, PyErr> {
     // Pre-fill each feature dimension of the array with the padding vector
     let mut final_array = Array3::from_shape_fn((sequences.len(), length, feat_dim), |(_, _, k)| pad_vec[k]);
     
+    if pad_type != "after" && pad_type != "before" {
+        return Err(PyValueError::new_err(
+            "The only 2 options for the type of padding are 'before' and 'after'.",
+        ));
+    }
+
     pool.install(|| {
         sequences
             .par_iter()
@@ -93,10 +106,11 @@ fn encode_vector_parallel(
                         }
                     }
                 }
-                _ => panic!("The only 2 options for the type of padding are 'before' and 'after'."),
+                _ => unreachable!(),
             })
     });
-    final_array
+    
+    Ok(final_array)
 }
 
 fn encode_vector_no_pad(
@@ -201,7 +215,7 @@ pub fn encode<'pyt>(
 
     // 4. Process the sequences using utility functions
     let sequences_rust = utils::extract_all_sequences(sequences)?;
-    let cpu_to_use = utils::check_nb_cpus(n_jobs);
+    let cpu_to_use = utils::check_nb_cpus(n_jobs)?;
     
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(cpu_to_use)
@@ -218,8 +232,8 @@ pub fn encode<'pyt>(
             }
             return Ok(py_list.unbind().into());
         } else {
-            let vec_length = utils::get_length_vec(&sequences_rust, pad_length);
-            let final_array = py.detach(|| encode_scalar_parallel(&sequences_rust, pad_type, vec_length, &lut, pad_vec[0], &pool));
+            let vec_length = utils::get_length_vec(&sequences_rust, pad_length)?;
+            let final_array = py.detach(|| encode_scalar_parallel(&sequences_rust, pad_type, vec_length, &lut, pad_vec[0], &pool))?;
             return Ok(final_array.into_pyarray(py).unbind().into());
         }
     } else {
@@ -231,8 +245,8 @@ pub fn encode<'pyt>(
             }
             return Ok(py_list.unbind().into());
         } else {
-            let vec_length = utils::get_length_vec(&sequences_rust, pad_length);
-            let final_array = py.detach(|| encode_vector_parallel(&sequences_rust, pad_type, vec_length, feat_dim, &lut, &pad_vec, &pool));
+            let vec_length = utils::get_length_vec(&sequences_rust, pad_length)?;
+            let final_array = py.detach(|| encode_vector_parallel(&sequences_rust, pad_type, vec_length, feat_dim, &lut, &pad_vec, &pool))?;
             return Ok(final_array.into_pyarray(py).unbind().into());
         }
     }
