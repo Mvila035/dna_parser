@@ -1,7 +1,7 @@
 use ndarray::prelude::*;
 use numpy::ndarray::{Array1, Axis};
 use numpy::array::PyArray1;
-use numpy::IntoPyArray;
+use numpy::{IntoPyArray, PyReadonlyArray1, PyReadwriteArray1};
 use pyo3::prelude::*;
 use rayon::prelude::*;
 use pyo3::exceptions::PyValueError;
@@ -101,7 +101,7 @@ fn inplace_csr_l2_normalize(vals: &mut Array1<f64>, indptr: &Array1<i32>) {
     }
 }
 
-fn tfidf_inplace(tf: &mut Array1<f64>, idf: &Array1<f64>, col_idx: &Array1<i32>, n_jobs: i16) {
+fn tfidf_inplace(tf: &mut Array1<f64>, idf: &ArrayView1<f64>, col_idx: &Array1<i32>, n_jobs: i16) {
     
     tf.axis_chunks_iter_mut(Axis(0), tf.len()/n_jobs as usize)
     .into_par_iter()
@@ -290,18 +290,18 @@ pub fn fit_rust<'py>(
 }
 
 #[pyfunction]
-#[pyo3(signature = (sequences, vocabulary, kmer_size, l2_normalize=true, smooth_idf=true, original=false, n_jobs=1))]
+#[pyo3(signature = (sequences, idf, vocabulary, kmer_size, l2_normalize=true, n_jobs=1))]
 pub fn transform_rust<'py>(
     py: Python<'py>, 
     sequences: &Bound<'py, PyAny>, 
+    idf: PyReadonlyArray1<f64>,
     vocabulary: &Vocabulary, 
     kmer_size: usize, 
     l2_normalize: bool,
-    smooth_idf: bool,
-    original: bool,
     n_jobs: i16,
 ) -> PyResult<CsrMatrix> {
 
+    let idf_view= idf.as_array();
     let sequences_rust = extract_all_sequences(sequences)?;
     
     let (counts, col_idx, indptr)= py.detach(|| {
@@ -312,12 +312,8 @@ pub fn transform_rust<'py>(
         let col_idx= Array1::from_vec(col_idx);
         let indptr=Array1::from_vec(indptr);
         
-        let n_seq= (indptr.len()-1) as f64;
 
-        let mut idf= document_frequency(&col_idx, vocabulary.len());
-        df_to_idf(&mut idf, n_seq, smooth_idf, original);
-
-        tfidf_inplace(&mut counts, &idf, &col_idx, n_jobs);
+        tfidf_inplace(&mut counts, &idf_view, &col_idx, n_jobs);
 
         if l2_normalize {
             inplace_csr_l2_normalize(&mut counts, &indptr);
@@ -362,7 +358,7 @@ pub fn fit_transform_with_voc<'py>(
         let mut idf= document_frequency(&col_idx, vocabulary.len());
         df_to_idf(&mut idf, n_seq, smooth_idf, original);
 
-        tfidf_inplace(&mut counts, &idf, &col_idx, n_jobs);
+        tfidf_inplace(&mut counts, &idf.view(), &col_idx, n_jobs);
 
         if l2_normalize {
             inplace_csr_l2_normalize(&mut counts, &indptr);
@@ -408,7 +404,7 @@ pub fn fit_transform_rust<'py>(
         let mut idf= document_frequency(&col_idx, vocabulary.len());
         df_to_idf(&mut idf, n_seq, smooth_idf, original);
 
-        tfidf_inplace(&mut counts, &idf, &col_idx, n_jobs);
+        tfidf_inplace(&mut counts, &idf.view(), &col_idx, n_jobs);
 
         if l2_normalize {
             inplace_csr_l2_normalize(&mut counts, &indptr);
