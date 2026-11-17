@@ -103,21 +103,22 @@ fn inplace_csr_l2_normalize(vals: &mut Array1<f64>, indptr: &Array1<i32>) {
 
 fn tfidf_inplace(tf: &mut Array1<f64>, idf: &ArrayView1<f64>, col_idx: &Array1<i32>, n_jobs: i16) {
     
-    tf.axis_chunks_iter_mut(Axis(0), tf.len()/n_jobs as usize)
-    .into_par_iter()
-    .enumerate()
-    .for_each(|(chunk_idx, chunk_view)|{
+    if tf.is_empty() {
+        return;
+    }
 
-        let chunk_size= chunk_view.len();
-        let mut global_index= chunk_idx*chunk_size;
-        for val in chunk_view{
-            *val= *val * idf[col_idx[global_index] as usize];
-            global_index+=1;
-        }
+    let effective_jobs = n_jobs.max(1).min(tf.len() as i16);
+    let chunk_size = tf.len() / effective_jobs as usize;
 
-    });
-    
-    
+    tf.axis_chunks_iter_mut(Axis(0), chunk_size)
+        .into_par_iter()
+        .zip(col_idx.axis_chunks_iter(Axis(0), chunk_size).into_par_iter())
+        .for_each(|(mut tf_chunk, col_chunk)| {
+            // Zip the col index which each count values for easy look up
+            for (val, &col) in tf_chunk.iter_mut().zip(col_chunk.iter()) {
+                *val = *val * idf[col as usize];
+            }
+        });
 }
 
 fn count_kmers( mut sequence: Vec<u8>, kmer_size: usize, vocabulary: &HashMap<Vec<u8>, usize>, buf: &mut KmerBuffer) -> (Vec<f64>, Vec<i32>) {
