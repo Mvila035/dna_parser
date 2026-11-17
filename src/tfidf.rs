@@ -107,8 +107,8 @@ fn tfidf_inplace(tf: &mut Array1<f64>, idf: &ArrayView1<f64>, col_idx: &Array1<i
         return;
     }
 
-    let effective_jobs = n_jobs.max(1).min(tf.len() as i16);
-    let chunk_size = tf.len() / effective_jobs as usize;
+    let effective_jobs = (n_jobs.max(1) as usize).min(tf.len());
+    let chunk_size = tf.len().div_ceil(effective_jobs);
 
     tf.axis_chunks_iter_mut(Axis(0), chunk_size)
         .into_par_iter()
