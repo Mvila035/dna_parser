@@ -1,7 +1,7 @@
 use ndarray::prelude::*;
 use numpy::ndarray::{Array1, Axis};
 use numpy::array::PyArray1;
-use numpy::IntoPyArray;
+use numpy::{IntoPyArray, PyReadonlyArray1};
 use pyo3::prelude::*;
 use rayon::prelude::*;
 use pyo3::exceptions::PyValueError;
@@ -101,23 +101,24 @@ fn inplace_csr_l2_normalize(vals: &mut Array1<f64>, indptr: &Array1<i32>) {
     }
 }
 
-fn tfidf_inplace(tf: &mut Array1<f64>, idf: &Array1<f64>, col_idx: &Array1<i32>, n_jobs: i16) {
+fn tfidf_inplace(tf: &mut Array1<f64>, idf: &ArrayView1<f64>, col_idx: &Array1<i32>, n_jobs: i16) {
     
-    tf.axis_chunks_iter_mut(Axis(0), tf.len()/n_jobs as usize)
-    .into_par_iter()
-    .enumerate()
-    .for_each(|(chunk_idx, chunk_view)|{
+    if tf.is_empty() {
+        return;
+    }
 
-        let chunk_size= chunk_view.len();
-        let mut global_index= chunk_idx*chunk_size;
-        for val in chunk_view{
-            *val= *val * idf[col_idx[global_index] as usize];
-            global_index+=1;
-        }
+    let effective_jobs = n_jobs.max(1).min(tf.len() as i16);
+    let chunk_size = tf.len() / effective_jobs as usize;
 
-    });
-    
-    
+    tf.axis_chunks_iter_mut(Axis(0), chunk_size)
+        .into_par_iter()
+        .zip(col_idx.axis_chunks_iter(Axis(0), chunk_size).into_par_iter())
+        .for_each(|(mut tf_chunk, col_chunk)| {
+            // Zip the col index which each count values for easy look up
+            for (val, &col) in tf_chunk.iter_mut().zip(col_chunk.iter()) {
+                *val = *val * idf[col as usize];
+            }
+        });
 }
 
 fn count_kmers( mut sequence: Vec<u8>, kmer_size: usize, vocabulary: &HashMap<Vec<u8>, usize>, buf: &mut KmerBuffer) -> (Vec<f64>, Vec<i32>) {
@@ -269,9 +270,9 @@ pub fn fit_rust<'py>(
 ) -> PyResult<Py<PyArray1<f64>>> {
     
     let sequences_rust = extract_all_sequences(sequences)?;
+    let cpu_to_use = check_nb_cpus(n_jobs)?;
     
     let idf= py.detach(|| {
-        let cpu_to_use = check_nb_cpus(n_jobs);
         
         let (_, col_idx, indptr) = get_counts_csr(sequences_rust, &vocabulary.vocab, kmer_size, cpu_to_use);
         let col_idx= Array1::from_vec(col_idx);
@@ -290,34 +291,30 @@ pub fn fit_rust<'py>(
 }
 
 #[pyfunction]
-#[pyo3(signature = (sequences, vocabulary, kmer_size, l2_normalize=true, smooth_idf=true, original=false, n_jobs=1))]
+#[pyo3(signature = (sequences, idf, vocabulary, kmer_size, l2_normalize=true, n_jobs=1))]
 pub fn transform_rust<'py>(
     py: Python<'py>, 
     sequences: &Bound<'py, PyAny>, 
+    idf: PyReadonlyArray1<f64>,
     vocabulary: &Vocabulary, 
     kmer_size: usize, 
     l2_normalize: bool,
-    smooth_idf: bool,
-    original: bool,
     n_jobs: i16,
 ) -> PyResult<CsrMatrix> {
 
+    let idf_view= idf.as_array();
     let sequences_rust = extract_all_sequences(sequences)?;
+    let cpu_to_use = check_nb_cpus(n_jobs)?;
     
     let (counts, col_idx, indptr)= py.detach(|| {
-        let cpu_to_use = check_nb_cpus(n_jobs);
 
         let (counts, col_idx, indptr) = get_counts_csr(sequences_rust, &vocabulary.vocab, kmer_size, cpu_to_use);
         let mut counts= Array1::from_vec(counts);
         let col_idx= Array1::from_vec(col_idx);
         let indptr=Array1::from_vec(indptr);
         
-        let n_seq= (indptr.len()-1) as f64;
 
-        let mut idf= document_frequency(&col_idx, vocabulary.len());
-        df_to_idf(&mut idf, n_seq, smooth_idf, original);
-
-        tfidf_inplace(&mut counts, &idf, &col_idx, n_jobs);
+        tfidf_inplace(&mut counts, &idf_view, &col_idx, n_jobs);
 
         if l2_normalize {
             inplace_csr_l2_normalize(&mut counts, &indptr);
@@ -348,9 +345,9 @@ pub fn fit_transform_with_voc<'py>(
 ) -> PyResult<CsrAndIDF> {
 
     let sequences_rust = extract_all_sequences(sequences)?;
+    let cpu_to_use = check_nb_cpus(n_jobs)?;
     
         let (counts, col_idx, indptr, idf) = py.detach(||{
-        let cpu_to_use = check_nb_cpus(n_jobs);
         
         let (counts, col_idx, indptr) = get_counts_csr(sequences_rust, &vocabulary.vocab, kmer_size, cpu_to_use);
         let mut counts= Array1::from_vec(counts);
@@ -362,7 +359,7 @@ pub fn fit_transform_with_voc<'py>(
         let mut idf= document_frequency(&col_idx, vocabulary.len());
         df_to_idf(&mut idf, n_seq, smooth_idf, original);
 
-        tfidf_inplace(&mut counts, &idf, &col_idx, n_jobs);
+        tfidf_inplace(&mut counts, &idf.view(), &col_idx, n_jobs);
 
         if l2_normalize {
             inplace_csr_l2_normalize(&mut counts, &indptr);
@@ -393,9 +390,10 @@ pub fn fit_transform_rust<'py>(
 ) -> PyResult<FitTransResults> {
 
     let mut sequences_rust = extract_all_sequences(sequences)?;
+    let cpu_to_use = check_nb_cpus(n_jobs)?;
 
    let(vocabulary, counts, col_idx, indptr, idf)= py.detach( || {
-        let cpu_to_use = check_nb_cpus(n_jobs);
+       
         let vocabulary= Vocabulary::from_bytes( Some(map_vocabulary(&mut sequences_rust, kmer_size)));
         
         let (counts, col_idx, indptr) = get_counts_csr(sequences_rust, &vocabulary.vocab, kmer_size, cpu_to_use);
@@ -408,7 +406,7 @@ pub fn fit_transform_rust<'py>(
         let mut idf= document_frequency(&col_idx, vocabulary.len());
         df_to_idf(&mut idf, n_seq, smooth_idf, original);
 
-        tfidf_inplace(&mut counts, &idf, &col_idx, n_jobs);
+        tfidf_inplace(&mut counts, &idf.view(), &col_idx, n_jobs);
 
         if l2_normalize {
             inplace_csr_l2_normalize(&mut counts, &indptr);

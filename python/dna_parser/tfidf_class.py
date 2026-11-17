@@ -106,9 +106,8 @@ class Tfidf:
         target_sequences = self.corpus if sequences is None else sequences
         seq_source = self._get_sequence_source(target_sequences)
 
-        val, col, indptr = transform_rust(seq_source, self.vocabulary, self.kmer_size,
-                                        l2_norm, self.smooth_idf, self.original_idf,
-                                        self.n_jobs)
+        val, col, indptr = transform_rust(seq_source, self.idf, self.vocabulary, self.kmer_size,
+                                        l2_norm, self.n_jobs)
         self._reset_if_needed(seq_source)
 
         tfidf_csr = csr_matrix(

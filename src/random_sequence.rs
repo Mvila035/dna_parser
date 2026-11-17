@@ -1,4 +1,5 @@
 
+use pyo3::exceptions::PyValueError;
 use rand::seq::IteratorRandom;
 use pyo3::prelude::*;
 use std::sync::Mutex;
@@ -77,7 +78,7 @@ fn parse_type_seq(length: i64, nb_of_seq: i64, seq_type: &str)-> Vec<String> {
             vec_of_seq.push(generate_aa_seq(length))
         },
 
-        _ => panic!()
+        _ => unreachable!()
 
     }
 
@@ -96,9 +97,9 @@ fn parse_type_seq(length: i64, nb_of_seq: i64, seq_type: &str)-> Vec<String> {
 /// * `n_jobs` - number of threads to use. 0 to use every cpu in your machine
 #[pyfunction]
 #[pyo3(signature = (length, nb_of_seq, seq_type="dna", n_jobs=1))]
-pub fn random_seq(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16) -> Vec<String>{
+pub fn random_seq(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16) -> PyResult<Vec<String>>{
 
-    let cpu_to_use= utils::check_nb_cpus(n_jobs);
+    let cpu_to_use= utils::check_nb_cpus(n_jobs)?;
 
     let results= Arc::new(Mutex::new(Vec::new()));
 
@@ -107,6 +108,11 @@ pub fn random_seq(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16) -> V
     let mut nb_seq_left= nb_of_seq;
 
     let mut seq_per_thread = nb_seq_left/(cpu_to_use as i64);
+
+    if seq_type != "dna" || seq_type != "rna" || seq_type != "aa" {
+        
+        return Err(PyValueError::new_err("Only valid sequence types are 'dna', 'rna' and 'aa'."))
+    }
 
     thread::scope(|s| {
 
@@ -146,7 +152,7 @@ pub fn random_seq(length: i64, nb_of_seq: i64, seq_type: &str, n_jobs: i16) -> V
         vec_to_return.push(i.clone());
     }
 
-    vec_to_return
+    Ok(vec_to_return)
     
 }
 
