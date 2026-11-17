@@ -34,7 +34,11 @@ fn step(nucleotide: u8, r: &mut i32, y: &mut i32, m: &mut i32, k: &mut i32, w: &
 #[inline]
 fn get_downsampling_length(length:usize, downsampling: usize, drop_remainder: bool)-> Result<usize,String> {
 
-    if downsampling > length {
+    if length == 0 {
+        Ok(0)
+    }
+
+    else if downsampling > length {
         Err("Downsampling value is greater than the length of the sequence!".to_string())
        
     }
